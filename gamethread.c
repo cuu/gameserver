@@ -1,5 +1,6 @@
 #include "gamethread.h"
 
+#include <libmill.h>
 
 GameThread*NewGameThread() {
   GameThread*p = NULL;
@@ -99,7 +100,7 @@ void GameThread_EventLoop(GameThread*self) {
 
 }
 
-void GameThread_FlipLoop(GameThread*self) {
+coroutine void GameThread_FlipLoop(GameThread*self) {
   int fps;
   
   while(self.Inited) {
@@ -114,11 +115,32 @@ void GameThread_FlipLoop(GameThread*self) {
       self.Frames=0;
       self.PrevTime= self.CurrentTime;
     }
+
+    msleep( now()+ (int)((1/30.0)*1000.0) );
   }
 
 }
 
-char *GameThread_Btn(GameThread*self,) {
+char *GameThread_Btn(GameThread*self,LispCmd*lisp_cmd) {
   
+  int keycode_idx;
 
+  if(lisp_cmd->Argc < 2) {
+    return "FALSE";
+  }
+
+  keycode_idx = CmdArg_GetInt(lisp_cmd->Args[0]);
+  if( keycode_idx< 8 && self->KeyLog[keycode_idx] >= 0) {
+    return "TRUE";
+  }
+
+  return "FALSE";
+}
+
+void GameThread_Run(GameThread*self) {
+  GameThread_InitWindow(self);
+  go(GameThread_FlipLoop(self));
+  
+  GameThread_EventLoop();
+  
 }

@@ -100,9 +100,12 @@ LispCmd* lisp_parser(char* lisp_str) {
   
   lisp_cmd = (LispCmd*)malloc(sizeof(LispCmd));
   lisp_cmd->Func = segs[0];
-  
+  lisp_cmd->Args = NULL;
+  lisp_cmd->Argc = 0;
+
   if(segs_number -1 > 0) {
     lisp_cmd->Args = (CmdArgs*)malloc( (segs_number-1)*sizeof(CmdArg));
+    lisp_cmd->Argc = segs_number-1;
   }
   
   for(i=1;i<segs_number;i++) {
@@ -134,4 +137,53 @@ LispCmd* lisp_parser(char* lisp_str) {
   return lisp_cmd;
 }
 
+//------------------------------------------------------------------------------
+char *CmdArg_GetStr(CmdArg*arg) {
+  if(arg->Type != 'S') {
+    return NULL;
+  }
 
+  return arg->Value;
+}
+
+double CmdArg_GetFloat(CmdArg*arg) {
+  double ret;
+  ret = 0.0;
+  if(arg->Type != 'F') {
+    return ret;
+  }
+  
+  ret = strtod(arg->Value,NULL);
+  
+  return ret;
+
+}
+
+
+int CmdArg_GetInt(CmdArg*arg) {
+  int ret;
+  ret = 0;
+  if(arg->Type != 'I') {
+    return ret;
+  }
+
+  ret = atoi(arg->Value);
+  return ret;
+}
+
+bool CmdArg_GetBoolean(CmdArg*arg) {
+  if(arg->Type != "B") {
+    return false;
+  }
+
+  if( strcmp( arg->Value,"true") == 0)  {
+    return true;
+  }
+
+  if( strcmp( arg->Value,"false") == 0)  {
+    return false;
+  }
+  
+  return false;
+
+}

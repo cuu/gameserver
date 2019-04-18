@@ -7,7 +7,8 @@ typedef struct {
   char Func[32];
   
   CmdArgs*Args;
-
+  int Argc;
+  
 }LispCmd;
 
 
