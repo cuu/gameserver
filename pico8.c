@@ -67,5 +67,32 @@ Pico8* NewPico8() {
   SDL_SetPaletteColors(p.DisplayPalette, &p.display_colors,0,16);
   
   
-
+  SDL_SetSurfacePalette(p.DisplayCanvas,p.DisplayPalette);
+  SDL_SetSurfacePalette(p.DrawCanvas,p.DrawPalette);
+  
+  for(i=0;i<16;i++) {
+    p.DrawPaletteIdx[i] =i;
+    if(i==0) {
+      p.PalTransparent[i] = 0;
+    }else {
+      p.PalTransparent[i] = 1;
+    }
+  }
+ 	
+  p.Font=TTF_OpenFont("PICO-8.ttf", 4);
+  if(!p.Font) {
+    printf("TTF_OpenFont: %s\n", TTF_GetError());
+    // handle error
+  }
+  
+  p.PenColor = 1;
+  
+  p.Version = 8;
+  
+  p.Uptime = SDL_GetTicks();
+  
+  
+  return p;
 }
+
+

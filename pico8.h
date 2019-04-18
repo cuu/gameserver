@@ -6,6 +6,7 @@
 
 #include <SDL/SDL.h>
 
+#include "types.h"
 
 typedef struct {
 
@@ -41,6 +42,7 @@ typedef struct {
   int SpriteFlags[256];
   int Uptime;
   
+  TTF_Font *Font;
   
 }Pico8;
 
