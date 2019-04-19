@@ -1,3 +1,6 @@
 *.a
 *.so
 mill1
+client
+*.o
+

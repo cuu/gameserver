@@ -6,10 +6,14 @@
 typedef struct {
   char Func[32];
   
-  CmdArgs*Args;
+  CmdArg*Args;
   int Argc;
   
 }LispCmd;
 
+int CmdArg_GetInt(CmdArg*arg);
+bool CmdArg_GetBoolean(CmdArg*arg);
+double CmdArg_GetFloat(CmdArg*arg);
+char *CmdArg_GetStr(CmdArg*arg);
 
 #endif

@@ -4,7 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <SDL/SDL.h>
+#include <SDL.h>
+#include <SDL_ttf.h>
+
 
 #include "types.h"
 
@@ -31,7 +33,7 @@ typedef struct {
   SDL_Palette *DrawPalette;
   int PalTransparent[16];
   
-  SDL_Rect *ClipRect;
+  SDL_Rect ClipRect;
   int PenColor;
   
   int Cursor[2];

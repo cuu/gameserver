@@ -1,3 +1,4 @@
+#include <string.h>
 #include "lisp_parser.h"
 
 #define SEGS_MAX 50
@@ -22,7 +23,7 @@ LispCmd* lisp_parser(char* lisp_str) {
       }
     }
 
-    if (lisp_str[i]) == '('){
+    if (lisp_str[i] == '('){
       depth+=1;
       lastpos=i;
     }
@@ -99,12 +100,12 @@ LispCmd* lisp_parser(char* lisp_str) {
   }
   
   lisp_cmd = (LispCmd*)malloc(sizeof(LispCmd));
-  lisp_cmd->Func = segs[0];
+  strcpy(lisp_cmd->Func, segs[0]);
   lisp_cmd->Args = NULL;
   lisp_cmd->Argc = 0;
 
   if(segs_number -1 > 0) {
-    lisp_cmd->Args = (CmdArgs*)malloc( (segs_number-1)*sizeof(CmdArg));
+    lisp_cmd->Args = (CmdArg*)malloc( (segs_number-1)*sizeof(CmdArg));
     lisp_cmd->Argc = segs_number-1;
   }
   
@@ -115,15 +116,15 @@ LispCmd* lisp_parser(char* lisp_str) {
       strncpy(lisp_cmd->Args[i].Value, segs[i]+1, strlen(segs[i])-1-1 );
 
     }else if(strcmp(segs[i],"true") == 0 || strcmp(segs[i],"false") == 0 ) {
-      lisp_cmd->Args[i].Type = "B";
-      strcpy(lisp_cmd->Args[i],segs[i]);
+      lisp_cmd->Args[i].Type = 'B';
+      strcpy(lisp_cmd->Args[i].Value,segs[i]);
 
     }else if(strchr(segs[i],'.') != NULL){
-      lisp_cmd->Args[i].Type= "F";
-      strcpy(lisp_cmd->Args[i],segs[i]);
+      lisp_cmd->Args[i].Type= 'F';
+      strcpy(lisp_cmd->Args[i].Value,segs[i]);
     }else {
-      lisp_cmd->Args[i].Type= "I";
-      strcpy(lisp_cmd->Args[i],segs[i]);      
+      lisp_cmd->Args[i].Type= 'I';
+      strcpy(lisp_cmd->Args[i].Value,segs[i]);      
     }
     
   }
@@ -172,7 +173,7 @@ int CmdArg_GetInt(CmdArg*arg) {
 }
 
 bool CmdArg_GetBoolean(CmdArg*arg) {
-  if(arg->Type != "B") {
+  if(arg->Type != 'B') {
     return false;
   }
 

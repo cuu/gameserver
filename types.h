@@ -1,6 +1,8 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include <stdio.h>
+#include <stdlib.h>
 
 typedef enum { false, true } bool;
 

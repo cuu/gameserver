@@ -2,9 +2,11 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#define MILL_USE_PREFIX
 #include <libmill.h>
 
 #include "types.h"
+#include "gamethread.h"
 
 #define TCPBUFF 2048
 #define UDPBUFF 2048
@@ -13,16 +15,16 @@ const char* remote_host = "127.0.0.1";
 const int remote_port  =8080;
 
 
-coroutine void start_tcp_client() {
-  ipaddr addr = ipremote(remote_host, remote_port, 0, -1);
-  tcpsock s = tcpconnect(addr, -1);
+mill_coroutine void start_tcp_client() {
+  mill_ipaddr addr = mill_ipremote(remote_host, remote_port, 0, -1);
+  mill_tcpsock s = mill_tcpconnect(addr, -1);
   
   char buf[TCPBUFF]; // one frame 
   
   size_t nbytes;
   for(;;) {
     
-    nbytes = tcprecvuntil(s, buf, sizeof(buf), "\n" , 1, -1);
+    nbytes = mill_tcprecvuntil(s, buf, sizeof(buf), "\n" , 1, -1);
     if(errno != 0) {
       if(errno == ENOBUFS) {
         printf("buff overflow\n");
@@ -37,21 +39,21 @@ coroutine void start_tcp_client() {
 }
 
 
-coroutine void start_udp_client() {
+mill_coroutine void start_udp_client() {
 
-  ipaddr addr = iplocal("0.0.0.0", 5555, 0);
-  udpsock s = udplisten(addr);
+  mill_ipaddr addr = mill_iplocal("0.0.0.0", 5555, 0);
+  mill_udpsock s = mill_udplisten(addr);
 
-  ipaddr outaddr = ipremote(remote_host, remote_port, 0, -1);
+  mill_ipaddr outaddr = mill_ipremote(remote_host, remote_port, 0, -1);
 
-  udpsend(s, outaddr, "ping", 4);
+  mill_udpsend(s, outaddr, "ping", 4);
 
   char buf[UDPBUFF];
-  ipaddr inaddr;
+  mill_ipaddr inaddr;
   size_t sz;
 
   for(;;) {
-    sz = udprecv(s, &inaddr, buf, sizeof(buf), -1);
+    sz = mill_udprecv(s, &inaddr, buf, sizeof(buf), -1);
     if(errno != 0) {
       if(errno == ENOBUFS) {
         printf("buff overflow\n");
@@ -68,10 +70,9 @@ int main(int argc,char*argv[]) {
   GameThread*gs=NULL;
   gs = NewGameThread();
   
-  go(start_tcp_client());
-  go(start_udp_client());
+  mill_go(start_tcp_client());
+  mill_go(start_udp_client());
   
-  gs.Run();
-  
+  GameThread_Run(gs);
   return 0;
 }

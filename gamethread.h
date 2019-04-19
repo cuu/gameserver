@@ -4,10 +4,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <SDL_ttf.h>
+
+#define MILL_USE_PREFIX
+#include <libmill.h>
+
+
 #include "types.h"
 #include "pico8.h"
+#include "lisp_parser.h"
 
-#include <SDL_ttf.h>
 
 
 typedef struct {
@@ -35,6 +41,18 @@ typedef struct {
 
 
 GameThread* NewGameThread();
+
+
+void GameThread_InitWindow(GameThread*self);
+void GameThread_QuitWindow(GameThread*self);
+void GameThread_EventLoop(GameThread*self);
+
+mill_coroutine void GameThread_FlipLoop(GameThread*self);
+char *GameThread_Btn(GameThread*self,LispCmd*lisp_cmd);
+
+void GameThread_Run(GameThread*self);
+
+
 
 
 #endif
