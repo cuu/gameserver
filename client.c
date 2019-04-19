@@ -34,7 +34,11 @@ mill_coroutine void start_tcp_client() {
         break;
         
       }
+    }else {
+      printf("tcp client received: %s \n",buf);
     }
+    
+    
   }
 }
 
@@ -58,6 +62,8 @@ mill_coroutine void start_udp_client() {
       if(errno == ENOBUFS) {
         printf("buff overflow\n");
       }
+    }else {
+        printf("udp received: %s\n",buf);
     }
   }
 

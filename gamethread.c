@@ -59,6 +59,8 @@ void GameThread_InitWindow(GameThread*self) {
     
     self->ThePico8 = NewPico8();
     self->ThePico8->HWND = self->big_surface;
+    
+    self->Inited= true;
   }
   
 }
