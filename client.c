@@ -15,7 +15,7 @@ const char* remote_host = "127.0.0.1";
 const int remote_port  =8080;
 
 
-mill_coroutine void start_tcp_client() {
+mill_coroutine void start_tcp_client(GameThread*gs) {
   mill_ipaddr addr = mill_ipremote(remote_host, remote_port, 0, -1);
   mill_tcpsock s = mill_tcpconnect(addr, -1);
   
@@ -36,6 +36,7 @@ mill_coroutine void start_tcp_client() {
       }
     }else {
       printf("tcp client received: %s \n",buf);
+      
     }
     
     
@@ -43,7 +44,7 @@ mill_coroutine void start_tcp_client() {
 }
 
 
-mill_coroutine void start_udp_client() {
+mill_coroutine void start_udp_client(GameThread*gs) {
 
   mill_ipaddr addr = mill_iplocal("0.0.0.0", 5555, 0);
   mill_udpsock s = mill_udplisten(addr);
@@ -64,6 +65,7 @@ mill_coroutine void start_udp_client() {
       }
     }else {
         printf("udp received: %s\n",buf);
+        
     }
   }
 
@@ -76,8 +78,8 @@ int main(int argc,char*argv[]) {
   GameThread*gs=NULL;
   gs = NewGameThread();
   
-  mill_go(start_tcp_client());
-  mill_go(start_udp_client());
+  mill_go(start_tcp_client(gs));
+  mill_go(start_udp_client(gs));
   
   GameThread_Run(gs);
   return 0;

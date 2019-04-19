@@ -1,5 +1,5 @@
 #include "pico8.h"
-
+#include "lisp_parser.h"
 
 Pico8* NewPico8() {
   SDL_Surface *surface;
@@ -90,7 +90,86 @@ Pico8* NewPico8() {
   p->Uptime = SDL_GetTicks();
   
   
+  p->res_state = -1;
+  p->res_offset = 0;
+  
+  p->Cursor[0] = 0;
+  p->Cursor[1] = 0;
+
+  // clear resource
+  memset(p->Map,0,64*128);
+  memset(p->Sprite,0,128*128);
+  memset(p->SpriteFlags,0,256);
+  
+  memset(p->Sfx,0,64*84);
+  memset(p->Music,0,64*5);
+
   return p;
 }
 
+void Pico8_SetGfx(Pico8*self,char*data) { //data is one line 
+  self->res_offset+=1;
+}
+
+void Pico8_SetGff(Pico8*self,char*data) {
+  self->res_offset+=1;
+
+}
+
+void Pico8_SetMap(Pico8*self,char*data) {
+  self->res_offset+=1;
+
+}
+
+void Pico8_SetResource(Pico8*self,char*data) {
+  switch(self->res_state) {
+    case RES_GFX:
+      Pico8_SetGfx(self,data);
+    break;
+    case RES_GFF:
+      Pico8_SetGff(self,data);
+    break;
+    case RES_MAP:
+      Pico8_SetMap(self,data);
+    break;
+  }
+}
+
+void Pico8_Res(Pico8*self,LispCmd*lisp_cmd) {
+  
+  int tmp;
+  tmp = -1;
+  self->res_offset = 0;
+  
+  tmp = CmdArg_GetInt(&lisp_cmd->Args[0]);
+  
+  self->res_state = tmp;
+  
+}
+
+void Pico8_ResDone(Pico8*self,LispCmd*lisp_cmd) {
+  
+  self->res_offset = 0;
+  self->res_state = -1;
+  
+  //clean up
+  
+}
+
+void Pico8_Cls(Pico8*self,LispCmd*lisp_cmd) {
+  int color_index = 0;
+  if(lisp_cmd->Argc == 0) {
+    SDL_FillRect(self->DrawCanvas, NULL, SDL_MapRGB(self->DrawCanvas->format, 0, 0, 0));
+    return;
+  }
+  
+  color_index = CmdArg_GetInt(&lisp_cmd->Args[0]);
+  if(color_index >=0 && color_index < 16 ) {
+    SDL_FillRect(self->DrawCanvas, NULL, self->DrawPaletteIdx[ color_index]);
+  }
+  
+  self->Cursor[0] = 0;
+  self->Cursor[1] = 0;
+  
+}
 

@@ -15,6 +15,8 @@ GameThread*NewGameThread() {
   p->PrevTime = 0;
   p->CurrentTime = 0;
   
+  p->state = STATE_DRAW;
+  
   return p;
 }
 
@@ -145,4 +147,52 @@ void GameThread_Run(GameThread*self) {
   
   GameThread_EventLoop(self);
   
+}
+
+char* GameThread_ProcessLispCmd(GameThread*self,char*cmd) {
+  
+  LispCmd *lisp_cmd=NULL;
+  
+  lisp_cmd = lisp_parser(cmd);
+  
+  if(lisp_cmd != NULL) {
+    
+    if(strcmp(lisp_cmd->Func,"res")) {
+      self->state = STATE_RES;
+      Pico8_Res(self->ThePico8,lisp_cmd);
+    }
+    if(strcmp(lisp_cmd->Func,"resdone")) {
+      Pico8_ResDone(self->ThePico8,lisp_cmd);
+    }
+
+
+    free(lisp_cmd);
+  }
+  
+  return "O";
+}
+
+char* GameThread_ProcessLispCmds(GameThread*self,char*cmds) {
+
+  char*pch= NULL;
+  char*tmp = NULL;
+
+  if(strlen(cmds)==0 ) {
+    return "Error";
+  }
+  
+  if(self->state == STATE_DRAW) {
+    tmp = trim(cmds,"\n");
+    pch = strtok(tmp,"|");
+    while (pch != NULL)
+    {
+      printf ("%s\n",pch);
+      GameThread_ProcessLispCmd(self,pch);
+      pch = strtok (NULL, "|");
+    }
+
+  }else {
+    Pico8_SetResource(self->ThePico8,cmds);
+  }
+  return "O";
 }

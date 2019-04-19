@@ -14,7 +14,8 @@
 #include "pico8.h"
 #include "lisp_parser.h"
 
-
+#define STATE_DRAW 0
+#define STATE_RES 1
 
 typedef struct {
 
@@ -36,7 +37,8 @@ typedef struct {
   int PrevTime;
   
   int KeyLog[8];
-  
+  int state;
+
 }GameThread;
 
 

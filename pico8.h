@@ -10,6 +10,14 @@
 
 #include "types.h"
 
+
+#define RES_GFX    0
+#define RES_GFF    1
+#define RES_MAP    2
+#define RES_SFX    3
+#define RES_MUSIC  4
+
+
 typedef struct {
 
   int Width;
@@ -41,11 +49,20 @@ typedef struct {
   int CameraDy;
   
   bool PaletteModified;
-  int SpriteFlags[256];
   int Uptime;
   
   TTF_Font *Font;
   
+  unsigned char Map[64*128];//8k,32 shared ,
+  unsigned char Sprite[128*128];//16k
+  unsigned char SpriteFlags[256];//
+
+  unsigned char Sfx[64*84];
+  unsigned char Music[64*5];
+  
+  int res_state;
+  int res_offset;
+
 }Pico8;
 
 Pico8* NewPico8();
