@@ -95,7 +95,7 @@ void GameThread_EventLoop(GameThread*self) {
       }
 
     }
-    SDL_Delay(30);
+    msleep(now()+30);
   }
 
 }
