@@ -1,4 +1,5 @@
 #include "pico8.h"
+#include "utils.h"
 #include "lisp_parser.h"
 
 Pico8* NewPico8() {
@@ -109,20 +110,109 @@ Pico8* NewPico8() {
 }
 
 void Pico8_SetGfx(Pico8*self,char*data) { //data is one line 
+  int i=0;
+  int col=0;
+  long ret;
+  char tmp[2];
+  
+  data = trim(data,"\n");
+  
+  if(strlen(data) < 3 ) { return ; }
+
+  for(i=0;i<strlen(data);i++) {
+    memset(tmp,0,2);
+    tmp[0] = data[i];
+    ret = strtol(tmp,NULL,16);
+    self->Sprite[col+ self->res_offset*128] = (unsigned char)ret;
+    //printf("%ld ",ret);
+    col+=1;
+    if(col >= 128) {
+      break;
+    }
+  }
+
+  //set shared map
   self->res_offset+=1;
 }
 
 void Pico8_SetGff(Pico8*self,char*data) {
+  int i=0;
+  int col=0;
+  long ret;
+  char tmp[3];
+  
+  data = trim(data,"\n");
+  
+  for(i=0;i<strlen(data);i+=2) {
+    memset(tmp,0,3);
+    tmp[0] = data[i];
+    tmp[1] = data[i+1];
+    ret = strtol(tmp,NULL,16);
+    self->SpriteFlags[col] = (unsigned char)ret;
+    col++;
+    if(col > 127) {
+      break;
+    }
+  }
+
   self->res_offset+=1;
 
 }
 
-void Pico8_SetMap(Pico8*self,char*data) {
+void Pico8_SetMap(Pico8*self,char*data) { // 32*128, 32*128,two parts
+  int i=0;
+  int col=0;
+  long ret;
+  char tmp[3];
+  
+  for(i=0;i<strlen(data);i+=2) {
+    memset(tmp,0,3);
+    tmp[0] = data[i];
+    tmp[1] = data[i+1];
+    ret = strtol(tmp,NULL,16);
+    self->Map[self->res_offset + col*64] = (unsigned char)ret;
+    col++;
+    if(col > 127) {
+      break;
+    }
+  }  
+
   self->res_offset+=1;
+
+}
+
+void Pico8_SetSharedMap(Pico8*self,LispCmd*lisp_cmd) {
+  
+  int shared=0;
+
+  int tx = 0;
+  int ty = 32;
+  int sx,sy;
+  unsigned char lo,hi;
+  unsigned char v;
+  if(self->Version > 3) {
+    for(sy=64;sy<128;sy++)
+      for(sx=0;sx<128;sx+=2)
+      {
+        lo = self->Sprite[sx+sy*128];
+        hi = self->Sprite[sx+1+sy*128];
+        v = (hi << 4) | lo;
+        self->Map[ty+tx*64] = v;
+        
+        shared+=1;
+        tx+=1;
+        if (tx == 128) {
+          tx = 0;
+          ty+=1;
+        }
+      }
+      printf("Map Shared: %d\n",shared);
+  }
 
 }
 
 void Pico8_SetResource(Pico8*self,char*data) {
+  
   switch(self->res_state) {
     case RES_GFX:
       Pico8_SetGfx(self,data);
@@ -134,6 +224,20 @@ void Pico8_SetResource(Pico8*self,char*data) {
       Pico8_SetMap(self,data);
     break;
   }
+}
+
+void Pico8_Version(Pico8*self,LispCmd*lisp_cmd) {
+
+  int tmp;
+
+  if(lisp_cmd->Argc == 0 ) {
+    return;
+  }
+
+  tmp = CmdArg_GetInt(&lisp_cmd->Args[0]);
+  printf("Set version %d %s\n",tmp,lisp_cmd->Args[0].Value);
+  self->Version = tmp;
+  
 }
 
 void Pico8_Res(Pico8*self,LispCmd*lisp_cmd) {
@@ -156,6 +260,12 @@ void Pico8_ResOver(Pico8*self,LispCmd*lisp_cmd) {
   //clean up
   
 }
+
+void Pico8_ResDone(Pico8*self,LispCmd*lisp_cmd) {
+  
+  Pico8_SetSharedMap(self,lisp_cmd);
+}
+
 
 void Pico8_Cls(Pico8*self,LispCmd*lisp_cmd) {
   int color_index = 0;

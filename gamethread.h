@@ -55,6 +55,8 @@ char *GameThread_Btn(GameThread*self,LispCmd*lisp_cmd);
 
 void GameThread_Run(GameThread*self);
 
+char* GameThread_ProcessLispCmd(GameThread*self,char*cmd);
+char* GameThread_ProcessLispCmds(GameThread*self,char*cmds);
 
 
 

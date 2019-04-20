@@ -30,9 +30,9 @@ LispCmd* lisp_parser(char* lisp_str) {
     
     if (lisp_str[i] == ')') {
       if(lastpos < i) {
-        char*tmp = (char*)malloc((i-lastpos+1+1)*sizeof(char));
-        strncpy(tmp, lisp_str +lastpos+1, i-lastpos+1 );
-        tmp[ i-lastpos+1 ] = '\0';
+        char*tmp = (char*)malloc((i-lastpos)*sizeof(char));
+        strncpy(tmp, lisp_str +lastpos+1, i-lastpos-1 );
+        tmp[ i-lastpos-1 ] = '\0';
         if(segs_number < SEGS_MAX) { 
           segs[segs_number] = tmp;
           segs_number+=1;
@@ -47,9 +47,9 @@ LispCmd* lisp_parser(char* lisp_str) {
     if (depth > 0 ) {
       if (lisp_str[i] == ' ') {
         if(instring == 0) {
-          char*tmp = (char*)malloc((i-lastpos+1+1)*sizeof(char));
-          strncpy(tmp, lisp_str +lastpos+1, i-lastpos+1 );
-          tmp[ i-lastpos+1 ] = '\0';
+          char*tmp = (char*)malloc((i-lastpos)*sizeof(char));
+          strncpy(tmp, lisp_str +lastpos+1, i-lastpos-1 );
+          tmp[ i-lastpos-1 ] = '\0';
           if(segs_number < SEGS_MAX) { 
             segs[segs_number] = tmp;
             segs_number+=1;
@@ -57,6 +57,7 @@ LispCmd* lisp_parser(char* lisp_str) {
             break;
           }
         }
+        lastpos = i;
       }
     }
     
@@ -109,22 +110,25 @@ LispCmd* lisp_parser(char* lisp_str) {
     lisp_cmd->Argc = segs_number-1;
   }
   
-  for(i=1;i<segs_number;i++) {
+  int j=0;
 
+  for(i=1;i<segs_number;i++) {
+    j=i-1;
+    //printf("segs %d is %s\n",i,segs[i]);
     if(segs[i][0] == '"') {
-      lisp_cmd->Args[i].Type = 'S';
-      strncpy(lisp_cmd->Args[i].Value, segs[i]+1, strlen(segs[i])-1-1 );
+      lisp_cmd->Args[j].Type = 'S';
+      strncpy(lisp_cmd->Args[j].Value, segs[i]+1, strlen(segs[i])-1-1 );
 
     }else if(strcmp(segs[i],"true") == 0 || strcmp(segs[i],"false") == 0 ) {
-      lisp_cmd->Args[i].Type = 'B';
-      strcpy(lisp_cmd->Args[i].Value,segs[i]);
+      lisp_cmd->Args[j].Type = 'B';
+      strcpy(lisp_cmd->Args[j].Value,segs[i]);
 
     }else if(strchr(segs[i],'.') != NULL){
-      lisp_cmd->Args[i].Type= 'F';
-      strcpy(lisp_cmd->Args[i].Value,segs[i]);
+      lisp_cmd->Args[j].Type= 'F';
+      strcpy(lisp_cmd->Args[j].Value,segs[i]);
     }else {
-      lisp_cmd->Args[i].Type= 'I';
-      strcpy(lisp_cmd->Args[i].Value,segs[i]);      
+      lisp_cmd->Args[j].Type= 'I';
+      strcpy(lisp_cmd->Args[j].Value,segs[i]);      
     }
     
   }

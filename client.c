@@ -42,9 +42,10 @@ mill_coroutine void start_tcp_client(GameThread*gs) {
         
       }
     }else {
-      buf[nbytes]='\0';
-      printf("tcp client received: %s $$\n",buf);
+      buf[nbytes-1]='\0';
+      //printf("tcp client received: %s $$\n",buf);
       
+      GameThread_ProcessLispCmds(gs,buf);
     }
     
     

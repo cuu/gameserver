@@ -23,7 +23,6 @@ typedef struct {
   int Width;
   int Height;
   int Version;
-  int MapMatrix[64*128];
   
   SDL_Surface *CanvasHWND;
   SDL_Surface *HWND;
@@ -68,7 +67,7 @@ typedef struct {
 
 Pico8* NewPico8();
 
-
+void Pico8_Version(Pico8*self,LispCmd*lisp_cmd);
 void Pico8_Res(Pico8*self,LispCmd*lisp_cmd);
 void Pico8_ResOver(Pico8*self,LispCmd*lisp_cmd);
 void Pico8_SetResource(Pico8*self,char*data);

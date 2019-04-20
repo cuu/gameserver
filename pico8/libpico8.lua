@@ -527,6 +527,8 @@ function api.load_p8_text(filename)
   api.server.send_resource(RES.MAP,  mapdata)
   api.server.send_resource(RES.MUSIC,musicdata)
 
+  api.server.send_resource_done()
+
 end
 
 function api.spr(n,x,y,w,h,flip_x,flip_y)

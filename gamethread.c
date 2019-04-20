@@ -153,19 +153,22 @@ char* GameThread_ProcessLispCmd(GameThread*self,char*cmd) {
   
   LispCmd *lisp_cmd=NULL;
   
+  
   lisp_cmd = lisp_parser(cmd);
   
   if(lisp_cmd != NULL) {
-    
-    if(strcmp(lisp_cmd->Func,"res")) {
+   
+    if(strcmp(lisp_cmd->Func,"res") == 0) {
+      printf("set resource....\n");
       self->state = STATE_RES;
       Pico8_Res(self->ThePico8,lisp_cmd);
+    }else if(strcmp(lisp_cmd->Func,"resdone") == 0) {
+      Pico8_ResDone(self->ThePico8,lisp_cmd);
+    }else if(strcmp(lisp_cmd->Func,"pico8") == 0) {
+      printf("%s\n",cmd);
+      Pico8_Version(self->ThePico8,lisp_cmd);
     }
 
-    if(strstr(cmd,"(resover)") >=0 ) {
-      self->state = STATE_DRAW;
-      Pico8_ResOver(self->ThePico8,NULL);
-    }
 
     free(lisp_cmd);
   }
@@ -183,17 +186,24 @@ char* GameThread_ProcessLispCmds(GameThread*self,char*cmds) {
   }
   
   if(self->state == STATE_DRAW) {
+
     tmp = trim(cmds,"\n");
     pch = strtok(tmp,"|");
     while (pch != NULL)
     {
-      printf ("%s\n",pch);
+      //printf ("%s\n",pch);
       GameThread_ProcessLispCmd(self,pch);
       pch = strtok (NULL, "|");
     }
 
   }else {
-    Pico8_SetResource(self->ThePico8,cmds);
+    if(strstr(cmds,"(resover)") != NULL) {
+      printf("find resover,%s\n",cmds);
+      self->state = STATE_DRAW;
+      Pico8_ResOver(self->ThePico8,NULL);
+    }else {
+      Pico8_SetResource(self->ThePico8,cmds);
+    }
   }
   return "O";
 }
