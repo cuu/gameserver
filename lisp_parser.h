@@ -11,6 +11,8 @@ typedef struct {
   
 }LispCmd;
 
+LispCmd* lisp_parser(char* lisp_str);
+
 int CmdArg_GetInt(CmdArg*arg);
 bool CmdArg_GetBoolean(CmdArg*arg);
 double CmdArg_GetFloat(CmdArg*arg);

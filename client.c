@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <unistd.h>
+#include <sys/socket.h>
 
 #define MILL_USE_PREFIX
 #include <libmill.h>
@@ -12,14 +14,19 @@
 #define UDPBUFF 2048
 
 const char* remote_host = "127.0.0.1";
-const int remote_port  =8080;
+const int remote_port  =8081;
 
 
 mill_coroutine void start_tcp_client(GameThread*gs) {
+  char buf[TCPBUFF]; // one frame 
+
   mill_ipaddr addr = mill_ipremote(remote_host, remote_port, 0, -1);
   mill_tcpsock s = mill_tcpconnect(addr, -1);
-  
-  char buf[TCPBUFF]; // one frame 
+
+  if(s == NULL) {
+    printf("tcp connect failed,%s\n",strerror(errno));
+    exit(-1);
+  }
   
   size_t nbytes;
   for(;;) {
@@ -35,7 +42,8 @@ mill_coroutine void start_tcp_client(GameThread*gs) {
         
       }
     }else {
-      printf("tcp client received: %s \n",buf);
+      buf[nbytes]='\0';
+      printf("tcp client received: %s $$\n",buf);
       
     }
     
@@ -64,7 +72,7 @@ mill_coroutine void start_udp_client(GameThread*gs) {
         printf("buff overflow\n");
       }
     }else {
-        printf("udp received: %s\n",buf);
+        //printf("udp received: %s\n",buf);
         
     }
   }

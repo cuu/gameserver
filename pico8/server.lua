@@ -298,12 +298,12 @@ function server.sfx(n,channel,mask)
 end
 
 function server.send_pico8_version(version)
-  local thing = safe_format_json("pico8", version)
+  local thing = safe_format("pico8", version)
   server.NetworkTCP.send(thing)
 end
 
 function server.send_resource_done()
-  local thing = safe_format_json("resdone")
+  local thing = safe_format("resdone")
   server.NetworkTCP.send(thing)
 
 end
@@ -312,8 +312,17 @@ function server.send_resource(res_type,res_data)
   if res_data == nil or #res_data == 0  then 
     return 
   end
-  
-  local thing = safe_format_json("res", res_type,res_data)
+ 
+	local thing = safe_format("res", res_type)
+  server.NetworkTCP.send(thing)
+
+  thing = res_data
+  local ret = server.NetworkTCP.send(thing)
+  if ret == nil then
+    print("the ret of res_data is ", ret,res_type,#res_data)
+  end
+ 
+	thing = safe_format("resover")
   server.NetworkTCP.send(thing)
 
 end

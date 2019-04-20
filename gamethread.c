@@ -98,7 +98,7 @@ void GameThread_EventLoop(GameThread*self) {
       }
 
     }
-    mill_msleep(mill_now()+30);
+    mill_msleep(mill_now()+ (int)((1/self->ThePico8->FPS)*1000.0)  );
   }
 
 }
@@ -120,7 +120,7 @@ mill_coroutine void GameThread_FlipLoop(GameThread*self) {
       self->PrevTime= self->CurrentTime;
     }
 
-    mill_msleep( mill_now()+ (int)((1/30.0)*1000.0) );
+    mill_msleep( mill_now()+ (int)((1/self->ThePico8->FPS)*1000.0) );
   }
 
 }
@@ -161,10 +161,11 @@ char* GameThread_ProcessLispCmd(GameThread*self,char*cmd) {
       self->state = STATE_RES;
       Pico8_Res(self->ThePico8,lisp_cmd);
     }
-    if(strcmp(lisp_cmd->Func,"resdone")) {
-      Pico8_ResDone(self->ThePico8,lisp_cmd);
-    }
 
+    if(strstr(cmd,"(resover)") >=0 ) {
+      self->state = STATE_DRAW;
+      Pico8_ResOver(self->ThePico8,NULL);
+    }
 
     free(lisp_cmd);
   }

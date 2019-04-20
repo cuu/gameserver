@@ -9,7 +9,7 @@
 
 
 #include "types.h"
-
+#include "lisp_parser.h"
 
 #define RES_GFX    0
 #define RES_GFF    1
@@ -63,8 +63,15 @@ typedef struct {
   int res_state;
   int res_offset;
 
+  float FPS;
 }Pico8;
 
 Pico8* NewPico8();
+
+
+void Pico8_Res(Pico8*self,LispCmd*lisp_cmd);
+void Pico8_ResOver(Pico8*self,LispCmd*lisp_cmd);
+void Pico8_SetResource(Pico8*self,char*data);
+
 
 #endif

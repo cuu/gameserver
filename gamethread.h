@@ -11,6 +11,7 @@
 
 
 #include "types.h"
+#include "utils.h"
 #include "pico8.h"
 #include "lisp_parser.h"
 
@@ -38,7 +39,7 @@ typedef struct {
   
   int KeyLog[8];
   int state;
-
+ 
 }GameThread;
 
 

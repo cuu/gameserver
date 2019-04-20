@@ -103,7 +103,8 @@ Pico8* NewPico8() {
   
   memset(p->Sfx,0,64*84);
   memset(p->Music,0,64*5);
-
+  
+  p->FPS = 60.0;
   return p;
 }
 
@@ -147,7 +148,7 @@ void Pico8_Res(Pico8*self,LispCmd*lisp_cmd) {
   
 }
 
-void Pico8_ResDone(Pico8*self,LispCmd*lisp_cmd) {
+void Pico8_ResOver(Pico8*self,LispCmd*lisp_cmd) {
   
   self->res_offset = 0;
   self->res_state = -1;

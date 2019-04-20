@@ -27,6 +27,15 @@ local pico8 = {
   camera_y = 0, 
 }
 
+local RES = {
+  GFX = 0,
+  GFF = 1,
+  MAP = 2,
+  SFX = 3,
+  MUSIC=4,
+}
+
+
 api.pico8 = pico8 
 
 function api.color(c)
@@ -512,11 +521,11 @@ function api.load_p8_text(filename)
 
   api.server.send_pico8_version(version)
 
-  api.server.send_resource("gfx",gfxdata)
-  api.server.send_resource("gff",gffdata:sub(1,#gffdata-1))
-  api.server.send_resource("sfx",sfxdata)
-  api.server.send_resource("map",mapdata)
-  api.server.send_resource("music",musicdata)
+  api.server.send_resource(RES.GFX,  gfxdata)
+  api.server.send_resource(RES.GFF,  gffdata:sub(1,#gffdata-1))
+  api.server.send_resource(RES.SFX,  sfxdata)
+  api.server.send_resource(RES.MAP,  mapdata)
+  api.server.send_resource(RES.MUSIC,musicdata)
 
 end
 
