@@ -15,6 +15,7 @@ typedef struct {
 }CmdArg;
 
 
+#define NONE -1
 
 
 #endif

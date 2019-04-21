@@ -1,4 +1,5 @@
 #include "pico8.h"
+#include "draw.h"
 #include "utils.h"
 #include "lisp_parser.h"
 
@@ -106,7 +107,18 @@ Pico8* NewPico8() {
   memset(p->Music,0,64*5);
   
   p->FPS = 60.0;
+  p->PaletteModified = false;
+
   return p;
+}
+
+void Pico8_sync_draw_pal(Pico8*self) {
+  int i;
+  for (i=0;i<16;i++) {
+    self->draw_colors[i] = self->pal_colors[ self->DrawPaletteIdx[i]  ];
+  }
+
+  SDL_SetPaletteColors(p->DrawPalette, p->draw_colors,0,16);  
 }
 
 void Pico8_SetGfx(Pico8*self,char*data) { //data is one line 
@@ -283,4 +295,422 @@ void Pico8_Cls(Pico8*self,LispCmd*lisp_cmd) {
   self->Cursor[1] = 0;
   
 }
+
+void Pico8_Spr(Pico8*self,LispCmd*lisp_cmd) {
+  int n,x,y,w,h;
+  int flip_x,flip_y;
+  int idx,idy;
+  int start_x,start_y;
+  int _w,_h,_sw,_sh;
+  int _x,_y;
+  
+  int i;
+
+  bool xflip,yflip;
+  
+  SDL_Surface*gfx_piece = NULL;
+  SDL_Surface*gfx_piece_new = NULL;
+  SDL_Rect _r;
+
+  int addr;
+  unsigned char v;
+
+  if(lisp_cmd->Argc==0) return;
+
+  if(lisp_cmd->Argc > 2 ) {
+    n = CmdArg_GetInt(&lisp_cmd->Args[0]);
+    x = CmdArg_GetInt(&lisp_cmd->Args[1]);
+    y = CmdArg_GetInt(&lisp_cmd->Args[2]);
+  }
+  
+  if(lisp_cmd->Argc > 3 ) {
+    w = CmdArg_GetInt(&lisp_cmd->Args[3]);
+  }
+
+  if(lisp_cmd->Argc > 4 ) {
+    h = CmdArg_GetInt(&lisp_cmd->Args[4]);
+  }
+  
+  if(lisp_cmd->Argc > 5 ) {
+    flip_x = CmdArg_GetInt(&lisp_cmd->Args[5]);
+  }
+
+  if(lisp_cmd->Argc > 6 ) {
+    flip_y = CmdArg_GetInt(&lisp_cmd->Args[6]);
+  }
+
+  idx = n%16;
+  idy = n/16;
+  
+  start_x = idx*8;
+  start_y = idy*8;
+  
+  _w = w*8;
+  _h = h*8;
+  _sw = _w;
+  _sh = _h;
+  
+  if(start_x >= self->Width || start_y >= self->Height) {
+    printf("spr start_x or start_y illegl\n");
+    return;
+  }
+  
+  if(start_x +_w > self->Width) {
+    _sw = self->Width - start_x;
+  }
+
+  if(start_y + _h > self.Height) {
+    _sh = self->Height - start_y;
+  }
+  
+  if (_sw == 0 || _sh == 0 ) {
+    printf("spr _sw or _sh is zero\n");
+    return;
+  }
+
+  gfx_piece = SDL_CreateRGBSurface(0, _sw,_sh, 8,0,0,0,0);
+  SDL_SetSurfacePalette(gfx_piece,self->DrawPalette);
+  
+  SDL_SetColorKey(gfx_piece,SDL_TRUE,0);
+  
+
+  for(_x:=0;_x<_sw;_x++)
+    for(_y:=0;_y<_sh;_y++)
+    {
+      addr = start_x+_x +(start_y+_y)*self->Width;
+      v = self->Sprite[addr];
+      Pixel(gfx_piece,self->draw_colors[v],_x,_y);
+    }
+  
+  xflip = false;
+  yflip = false;
+  
+  if(flip_x > 0 ) {
+    xflip = true;
+  }
+  
+  if(flip_y > 0 ) {
+    yflip = true;
+  }
+  
+  gfx_piece_new = Transform_Flip(gfx_piece,xflip,yflip);
+  
+  for(i=0;i<16;i++) {
+    if(self->PalTransparent[i] == 0) {
+      SDL_SetColorKey(gfx_piece_new,SDL_TRUE,i);
+    }
+  }
+
+  _r = (SDL_Rect){x,y,0,0};
+  
+  Surface_Blit(self->DrawCanvas,gfx_piece_new,_r,NULL);
+  
+  SDL_FreeSurface(gfx_piece);
+  SDL_FreeSurface(gfx_piece_new);
+
+
+}
+
+void Pico8_draw_map(Pico8*self,int n,int x, int  y) {
+  int idx=0,idy =0;
+  int start_x = 0,start_y = 0;
+  int w_=0, h_=0;
+  int addr;
+  int _x,_y;
+
+  SDL_Rect _r;
+
+
+  idx = n%16;
+  idy = n/16;
+  start_x = idx*8;
+  start_y = idy*8;
+  
+  w_ = 8;
+  h_ = 8;
+  
+  gfx_piece = SDL_CreateRGBSurface(0, w_,h_, 8,0,0,0,0);
+  SDL_SetSurfacePalette(gfx_piece,self->DrawPalette);
+  SDL_SetColorKey(gfx_piece,SDL_TRUE,0);
+  
+  for(_x:=0;_x<w_;_x++)
+    for(_y:=0;_y<h_;_y++)
+    {
+      addr = start_x+_x +(start_y+_y)*self->Width;
+      v = self->Sprite[addr];
+      Pixel(gfx_piece,self->draw_colors[v],_x,_y);
+    }
+  
+  _r = (SDL_Rect){x,y,0,0};
+  Surface_Blit(self->DrawCanvas,gfx_piece_new,_r,NULL);
+  SDL_FreeSurface(gfx_piece);
+  
+}
+
+void Pico8_Map(Pico8*self,LispCmd*lisp_cmd) {
+  int cel_x,cel_y,sx,sy,cel_w,cel_h,bitmask;
+  int addr;
+  cel_x = cel_y = sx = sy = cel_w = cel_h = bitmask= 0;
+  
+  int x,y;
+  unsigned char v;
+
+  if(lisp_cmd->Argc==0) {
+    return;
+  }
+
+  if(lisp_cmd->Argc > 0 ){
+    cel_x =  CmdArg_GetInt(&lisp_cmd->Args[0]);
+  }
+  if(lisp_cmd->Argc > 1 ){
+    cel_y =  CmdArg_GetInt(&lisp_cmd->Args[1]);
+  }
+
+  if(lisp_cmd->Argc > 2 ){ 
+    sx = CmdArg_GetInt(&lisp_cmd->Args[2]);
+  }
+  if(lisp_cmd->Argc > 3 ){ 
+    sy = CmdArg_GetInt(&lisp_cmd->Args[3]);
+  }
+
+  if(lisp_cmd->Argc > 4 ){
+    cel_w =  CmdArg_GetInt(&lisp_cmd->Args[4]);
+  }  
+  if(lisp_cmd->Argc > 5 ){
+    cel_h =  CmdArg_GetInt(&lisp_cmd->Args[5]);
+  }
+
+  if(lisp_cmd->Argc > 6 ){
+    bitmask =  CmdArg_GetInt(&lisp_cmd->Args[6]);
+  }
+
+  for(y=0;y<cel_h;y++) {
+    for(x=0;x<cel_w;x++) {
+      addr = cel_y + y +(cel_x+x)*64;
+      if(addr < 8192) {
+        v = self->Map[addr];
+        if (v > 0 ) {
+          if(bitmask == 0 ) {
+            Pico8_draw_map(self,v,sx+x*8,sy+y*8);
+          }else {
+            if( (self->SpriteFlags[v] & bitmask) != 0) {
+              Pico8_draw_map(self,v,sx+x*8,sy+y*8);
+            }
+          }
+        }
+      }else {
+        printf("addr >= 8192,exceeds %d\n",addr);
+      }
+    }
+  }
+  
+}
+
+int Pico8_Color(Pico8*self,LispCmd*lisp_cmd) {
+  int p;
+  if(lisp_cmd->Argc==0) {
+    return self->PenColor;
+  }
+  
+  p = CmdArg_GetInt(&lisp_cmd->Args[0]);
+  
+  if(p< 0) { return self->PenColor;}
+  if (p < 16 && p >= 0 ) {
+    self->PenColor = p;
+  }
+  
+  return self->PenColor;
+
+}
+
+int Pico8_set_color(Pico8*self,int p) {
+  
+  if(p == -1) {
+    return self->PenColor;
+  }
+
+  if(p< 0) { return self->PenColor;}
+  if (p < 16 && p >= 0 ) {
+    self->PenColor = p;
+  }
+  
+  return self->PenColor;
+
+}
+
+
+void Pico8_Flip(Pico8*self,LispCmd*lisp_cmd) {
+
+}
+void Pico8_Print(Pico8*self,LispCmd*lisp_cmd) {
+
+}
+
+void Pico8_Rectfill(Pico8*self,LispCmd*lisp_cmd) {
+  int x0,y0,x1,y1,col;
+  int w,h;
+  SDL_Rect rect_;
+
+  x0=y0=x1=y1=0;
+  col = -1;
+  
+  if(lisp_cmd->Argc < 4) {
+    return;
+  }
+  
+  if(lisp_cmd->Argc > 3) {
+    x0 = CmdArg_GetInt(&lisp_cmd->Args[0]);
+    y0 = CmdArg_GetInt(&lisp_cmd->Args[1]);
+    x1 = CmdArg_GetInt(&lisp_cmd->Args[2]);
+    y1 = CmdArg_GetInt(&lisp_cmd->Args[3]);
+  }
+
+  if(lisp_cmd->Argc > 4) {
+    col = CmdArg_GetInt(&lisp_cmd->Args[4]);
+  }
+
+  Pico8_set_color(col);
+  
+  w = (x1-x0)+1;
+  h = (y1-y0)+1;
+
+  if(w < 0 ) {
+    w = -w;
+    x0 = x0-w;
+  }
+  if(h<0) {
+    h = -h;
+    y0 = y0-h;
+  }
+  
+  rect_ = (SDL_Rect){x0,y0,w,h};
+  
+  Draw_Rect(self->DrawCanvas,self->draw_colors[self->PenColor], rect_,0);
+
+}
+
+void Pico8_Rect(Pico8*self,LispCmd*lisp_cmd) {
+  int x0,y0,x1,y1,col;
+  SDL_Rect rect_;
+
+  col = -1;
+  
+  if(lisp_cmd->Argc < 4 ) {
+    return;
+  }
+
+  if(lisp_cmd->Argc > 3) {
+    x0 = CmdArg_GetInt(&lisp_cmd->Args[0]);
+    y0 = CmdArg_GetInt(&lisp_cmd->Args[1]);
+    x1 = CmdArg_GetInt(&lisp_cmd->Args[2]);
+    y1 = CmdArg_GetInt(&lisp_cmd->Args[3]);
+  }
+  if(lisp_cmd->Argc > 4) {
+    col = CmdArg_GetInt(&lisp_cmd->Args[4]);
+  }
+
+  
+  Pico8_set_color(col);
+  
+  rect_ = (SDL_Rect){x0+1,y0+1,x1-x0,y1-y0};
+  
+  Draw_Rect(self->DrawCanvas,self->draw_colors[self->PenColor], rect_,1);
+
+}
+
+
+void Pico8_Palt(Pico8*self,LispCmd*lisp_cmd) {
+  int c,t;
+  int i;
+
+  if(lisp_cmd->Argc == 0 ) {
+    for(i=0;i<16;i++) {
+      if(i==0) {
+        self->PalTransparent[i] = 0;
+      }else{
+        self->PalTransparent[i] = 1;
+      }
+    }
+  }
+
+  if(lisp_cmd->Argc == 2 ) {
+    c = CmdArg_GetInt(&lisp_cmd->Args[0]);
+    t = CmdArg_GetInt(&lisp_cmd->Args[1]);
+    c = c % 16;
+    if(t == 1) {
+      self.PalTransparent[c] = 0;
+    }else {
+      self.PalTransparent[c] = 1;
+    }
+  }
+}
+
+void Pico8_set_palt(Pico8*self,int c,int t) {
+
+  if (c == NONE && t == NONE ) {
+    for(i=0;i<16;i++) {
+      if(i==0) {
+        self->PalTransparent[i] = 0;
+      }else{
+        self->PalTransparent[i] = 1;
+      }
+    }
+  }
+    
+  c = c % 16;
+  if(t == 1) {
+    self.PalTransparent[c] = 0;
+  }else {
+    self.PalTransparent[c] = 1;
+  }
+    
+}
+
+void Pico8_Pal(Pico8*self,LispCmd*lisp_cmd) {
+  int c0,c1,p;
+  int i;
+
+  if(lisp_cmd->Argc == 0 ) {
+    if(self->PaletteModified == false) { 
+      return;
+    }
+    
+    for(i=0;i<16;i++) {
+      self->DrawPaletteIdx[i] = i;
+      self->display_colors[i] = self->pal_colors[i];
+      self->draw_colors[i]    = self->pal_colors[i];
+    }
+
+    SDL_SetPaletteColors(p->DrawPalette, p->draw_colors,0,16);
+    SDL_SetPaletteColors(p->DisplayPalette, p->display_colors,0,16);
+    
+    Pico8_set_palt(NONE,NONE);
+    Pico8_sync_draw_pal(self);
+    SDL_SetSurfacePalette(p->DisplayCanvas,p->DisplayPalette);
+    SDL_SetSurfacePalette(p->DrawCanvas,p->DrawPalette);
+    self->PaletteModified = false;
+    
+  }else if(lisp_cmd->Argc == 3 ) {
+    c0 = CmdArg_GetInt(&lisp_cmd->Args[0]);
+    c1 = CmdArg_GetInt(&lisp_cmd->Args[1]);
+    p =  CmdArg_GetInt(&lisp_cmd->Args[2]);
+    c0 = c0 % 16;
+    c1 = c1 % 16;  
+    
+    if(p==1) {
+      self->display_colors[c0] = self->pal_colors[c1];
+      self->PaletteModified = true;
+      SDL_SetPaletteColors(p->DisplayPalette, p->display_colors,0,16);
+      SDL_SetSurfacePalette(p->DisplayCanvas,p->DisplayPalette);
+    }else if (p == 0 ) {
+      
+      self->DrawPaletteIdx[c0] = c1;
+      self->PaletteModified  = true;
+      Pico8_sync_draw_pal(self);
+      SDL_SetSurfacePalette(p->DrawCanvas,p->DrawPalette);
+    }
+  }
+
+}
+
 

@@ -163,10 +163,48 @@ char* GameThread_ProcessLispCmd(GameThread*self,char*cmd) {
       self->state = STATE_RES;
       Pico8_Res(self->ThePico8,lisp_cmd);
     }else if(strcmp(lisp_cmd->Func,"resdone") == 0) {
+
       Pico8_ResDone(self->ThePico8,lisp_cmd);
+
     }else if(strcmp(lisp_cmd->Func,"pico8") == 0) {
-      printf("%s\n",cmd);
+      //printf("%s\n",cmd);
       Pico8_Version(self->ThePico8,lisp_cmd);
+
+    }else if(strcmp(lisp_cmd->Func,"spr")==0) {
+
+      Pico8_Spr(self->ThePico8,lisp_cmd);
+
+    }else if(strcmp(lisp_cmd->Func,"map") == 0) {
+
+      Pico8_Map(self->ThePico8,lisp_cmd);
+
+    }else if(strcmp(lisp_cmd->Func,"color")==0) {
+
+      Pico8_Color(self->ThePico8,lisp_cmd);
+
+    }else if(strcmp(lisp_cmd->Func,"flip")==0) {
+
+      Pico8_Flip(self->ThePico8,lisp_cmd);
+
+    }else if(strcmp(lisp_cmd->Func,"print")==0) {
+
+      Pico8_Print(self->ThePico8,lisp_cmd);
+
+    }else if(strcmp(lisp_cmd->Func,"rectfill")==0 {
+
+      Pico8_Rectfill(self->ThePico8,lisp_cmd);
+
+    }else if(strcmp(lisp_cmd->Func,"rect") == 0) {
+
+      Pico8_Rect(self->ThePico8,lisp_cmd);
+
+    }else if(strcmp(lisp_cmd->Func,"palt") == 0) {
+
+      Pico8_Palt(self->ThePico8,lisp_cmd);
+
+    }else if(strcmp(lisp_cmd->Func,"pal") == 0 ) {
+
+      Pico8_Pal(self->ThePico8,lisp_cmd);
     }
 
 

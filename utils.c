@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -40,4 +41,15 @@ char *rtrim(char *str, const char *seps)
 char *trim(char *str, const char *seps)
 {
     return ltrim(rtrim(str, seps), seps);
+}
+
+void panic(const char*format,...){
+
+  va_list args;
+  va_start(args, format);
+  vprintf(format, args);
+  va_end(args);
+  
+  exit(-1);
+
 }
