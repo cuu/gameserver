@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <SDL.h>
 #include <SDL_ttf.h>
 
 #define MILL_USE_PREFIX
@@ -40,6 +41,9 @@ typedef struct {
   int KeyLog[8];
   int state;
  
+  mill_udpsock udpsock;
+  mill_ipaddr outaddr;
+  
 }GameThread;
 
 
@@ -48,6 +52,8 @@ GameThread* NewGameThread();
 
 void GameThread_InitWindow(GameThread*self);
 void GameThread_QuitWindow(GameThread*self);
+
+void  GameThread_SendBtn(GameThread*self,SDL_Event event);
 void GameThread_EventLoop(GameThread*self);
 
 mill_coroutine void GameThread_FlipLoop(GameThread*self);

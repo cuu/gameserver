@@ -36,8 +36,12 @@ typedef struct {
   SDL_Color display_colors[16];
   
   int DrawPaletteIdx[16];
+
+
   SDL_Palette *DisplayPalette;
-  SDL_Palette *DrawPalette;
+  SDL_Palette *Draw_Palette;
+  SDL_Palette *Guu_Palette;//segment fault point
+
   int PalTransparent[16];
   
   SDL_Rect ClipRect;
@@ -52,12 +56,12 @@ typedef struct {
   
   TTF_Font *Font;
   
-  unsigned char Map[64*128];//8k,32 shared ,
-  unsigned char Sprite[128*128];//16k
-  unsigned char SpriteFlags[256];//
+  unsigned char *Map;//[64*128];//8k,32 shared ,
+  unsigned char *Sprite;//[128*128];//16k
+  unsigned char *SpriteFlags;//[256];//
 
-  unsigned char Sfx[64*84];
-  unsigned char Music[64*5];
+  unsigned char *Sfx;//[64*84];
+  unsigned char *Music;//[64*5];
   
   int res_state;
   int res_offset;

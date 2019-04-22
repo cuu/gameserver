@@ -76,6 +76,70 @@ void GameThread_QuitWindow(GameThread*self) {
   SDL_Quit();
 }
 
+void  GameThread_SendBtn(GameThread*self,SDL_Event event) {
+  
+  char buffer[32];
+  char*down="Down";
+  char*up = "Up";
+  char *p=NULL;
+  memset(buffer,0,32);
+
+  if (event.type == SDL_KEYDOWN) {
+    p = down;
+    switch(event.key.keysym.sym ) {
+      case  SDLK_LEFT:
+        sprintf(buffer,"Left,%s\n",p);
+        break;
+      case SDLK_RIGHT:
+        sprintf(buffer,"Right,%s\n",p);
+        break;
+      case SDLK_UP:
+        sprintf(buffer,"Up,%s\n",p);
+        break;
+      case SDLK_u:
+        sprintf(buffer,"U,%s\n",p);
+        break;
+      case SDLK_i:
+        sprintf(buffer,"I,%s\n",p);
+        break;
+      case SDLK_RETURN:
+        sprintf(buffer,"Return,%s\n",p);
+        break;
+      case SDLK_ESCAPE:
+        sprintf(buffer,"Escape,%s\n",p);
+        break;
+    }
+  }else if (event.type == SDL_KEYUP) {
+    p = up;
+    switch(event.key.keysym.sym ) {
+      case  SDLK_LEFT:
+        sprintf(buffer,"Left,%s\n",p);
+        break;
+      case SDLK_RIGHT:
+        sprintf(buffer,"Right,%s\n",p);
+        break;
+      case SDLK_UP:
+        sprintf(buffer,"Up,%s\n",p);
+        break;
+      case SDLK_u:
+        sprintf(buffer,"U,%s\n",p);
+        break;
+      case SDLK_i:
+        sprintf(buffer,"I,%s\n",p);
+        break;
+      case SDLK_RETURN:
+        sprintf(buffer,"Return,%s\n",p);
+        break;
+      case SDLK_ESCAPE:
+        sprintf(buffer,"Escape,%s\n",p);
+        break;
+    }
+  }
+
+  if(strlen(buffer) > 2) {
+    mill_udpsend(self->udpsock, self->outaddr, buffer,strlen(buffer));
+  }
+}
 
 void GameThread_EventLoop(GameThread*self) {
   
@@ -96,7 +160,7 @@ void GameThread_EventLoop(GameThread*self) {
           break;
         }
       }
-
+      GameThread_SendBtn(self,event);
     }
     mill_msleep(mill_now()+ (int)((1/self->ThePico8->FPS)*1000.0)  );
   }

@@ -61,11 +61,14 @@ mill_coroutine void start_udp_client(GameThread*gs) {
   mill_ipaddr outaddr = mill_ipremote(remote_host, remote_port, 0, -1);
 
   mill_udpsend(s, outaddr, "ping", 4);
-
+  
   char buf[UDPBUFF];
   mill_ipaddr inaddr;
   size_t sz;
-
+  
+  gs->udpsock = s;
+  gs->outaddr = outaddr;
+  
   for(;;) {
     sz = mill_udprecv(s, &inaddr, buf, sizeof(buf), -1);
     if(errno != 0) {
