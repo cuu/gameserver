@@ -211,8 +211,8 @@ SDL_Rect Polygon(SDL_Surface*surf, SDL_Color*color,int**points,int points_number
     xlist[numpoints] = x;
     ylist[numpoints] = y;
     numpoints+=1;
-    left   = MAX(x,left);
-    top    = MAX(y,top);
+    left   = MIN(x,left);
+    top    = MIN(y,top);
     right  = MAX(x,right);
     bottom = MAX(y,bottom);
   }
