@@ -18,7 +18,7 @@ LispCmd* lisp_parser(char* lisp_str) {
   for(i=0;i<strlen(lisp_str);i++ ) {
     if (lisp_str[i] != ' ' && lisp_str[i] != '(' ) {
       if(depth == 0) {
-        printf("syntax error %d\n",i);
+        printf("syntax error %d %s\n",i,lisp_str);
         return NULL;
       }
     }

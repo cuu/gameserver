@@ -43,7 +43,7 @@ local udp = assert(socket.udp())
 function UDP.connect()
 	assert(udp:setpeername(remote_host,8080))
 	udp:settimeout()
-	udp:send("ping")
+	udp:send("(ping)\n")
 end
 
 function UDP.send() -- must inside lua's coroutine
@@ -290,7 +290,7 @@ end
 function GetBtnLoop()
   local count = 0 
   local framerate = 1/api.pico8.fps
-  udp:send("ping")
+  udp:send("(ping)\n")
   while true do
     udp:settimeout( framerate )
     local s, status = udp:receive()

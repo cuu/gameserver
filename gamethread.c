@@ -149,6 +149,11 @@ void GameThread_Run(GameThread*self) {
   
 }
 
+void GameThread_Pong(GameThread*self,LispCmd*lisp_cmd) {
+  printf("Pong\n");
+  
+}
+
 char* GameThread_ProcessLispCmd(GameThread*self,char*cmd) {
   
   LispCmd *lisp_cmd=NULL;
@@ -205,8 +210,10 @@ char* GameThread_ProcessLispCmd(GameThread*self,char*cmd) {
     }else if(strcmp(lisp_cmd->Func,"pal") == 0 ) {
 
       Pico8_Pal(self->ThePico8,lisp_cmd);
-    }
+    } else if(strcmp(lisp_cmd->Func,"ping") == 0 ) {
 
+      GameThread_Pong(self,lisp_cmd);
+    }
 
     free(lisp_cmd);
   }
