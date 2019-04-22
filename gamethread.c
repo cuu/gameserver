@@ -214,7 +214,10 @@ char* GameThread_ProcessLispCmd(GameThread*self,char*cmd) {
 
       GameThread_Pong(self,lisp_cmd);
     }
-
+    
+    if(lisp_cmd->Args !=NULL) {
+      free(lisp_cmd->Args);
+    }
     free(lisp_cmd);
   }
   

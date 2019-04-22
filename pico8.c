@@ -579,10 +579,11 @@ void Pico8_Flip(Pico8*self,LispCmd*lisp_cmd) {
       stretchRect.w = bigger_border;
       stretchRect.h = bigger_border;
       
+      
       if( SDL_BlitScaled( self->DisplayCanvas, NULL, self->HWND, &stretchRect) != 0 ){
         printf("Scale blit error %s\n",SDL_GetError());
       }
-
+      
     }else {
       Surface_Blit(self->HWND,self->DisplayCanvas,&stretchRect,NULL);
     }
