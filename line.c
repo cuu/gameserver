@@ -106,7 +106,7 @@ SDL_Rect Lines(SDL_Surface *surf,SDL_Color *col,bool closed, int**pointlist,int 
   }  
   
   if(closed==true && drawn > 2 ) {
-    item = pointlist[0];
+    item = &pointlist[0];
     x = item[0];
     y = item[1];
     
@@ -193,10 +193,48 @@ int clip_and_draw_line_width(SDL_Surface*surf,SDL_Rect*rect,SDL_Color*col,int wi
   
   memcpy(newpts,pts,4*sizeof(int));
   
+  if (clip_and_draw_line(surf,rect,col,newpts) > 0) {
+    anydraw=1;
+    memcpy(range,newpts,4*sizeof(int));
+  }else {
+    range[0] = 10000;
+    range[1] = 10000;
+    range[2] = -10000;
+    range[3] = -10000;
+  }
   
-  
-  
+	for(loop = 1; loop < width; loop +=2) {
+		newpts[0] = pts[0] + xinc*(loop/2+1);
+		newpts[1] = pts[1] + yinc*(loop/2+1);
+		newpts[2] = pts[2] + xinc*(loop/2+1);
+		newpts[3] = pts[3] + yinc*(loop/2+1);
+		if(clip_and_draw_line(surf,rect,col,newpts) > 0) {
+			anydraw = 1;
+			range[0] = MIN(newpts[0],range[0]);
+			range[1] = MIN(newpts[1],range[1]);
+			range[2] = MAX(newpts[2],range[2]);
+			range[3] = MAX(newpts[3],range[3]);
+		}
+		if((loop + 1) < width) {
+			newpts[0] = pts[0] - xinc*(loop/2+1);
+			newpts[1] = pts[1] - yinc*(loop/2+1);
+			newpts[2] = pts[2] - xinc*(loop/2+1);
+			newpts[3] = pts[3] - yinc*(loop/2+1);
+			if(clip_and_draw_line(surf,rect,col, newpts) > 0) {
+				anydraw = 1;
+				range[0] = MIN(newpts[0],range[0]);
+				range[1] = MIN(newpts[1],range[1]);
+				range[2] = MAX(newpts[2],range[2]);
+				range[3] = MAX(newpts[3],range[3]);
+			}
+		}
+	}  
+  if(anydraw > 0) {
+    memcpy(pts,range,4*sizeof(int));
+  }
 
+  return anydraw;
+  
 }
 
 
