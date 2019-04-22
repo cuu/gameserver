@@ -21,7 +21,7 @@ SDL_Rect Surface_Blit(SDL_Surface*dst, SDL_Surface*source,SDL_Rect*dest,SDL_Rect
   dest_rect.w = source->w;
   dest_rect.h = source->h;
   
-  if(area==NULL) {
+  if(area !=NULL) {
     dest_rect.w = area->w;
     dest_rect.h = area->h;
   }

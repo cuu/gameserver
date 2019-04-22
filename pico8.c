@@ -35,7 +35,7 @@ Pico8* NewPico8() {
   p->pal_colors[15] = (SDL_Color){255,204,170,255};
   
     
-  surface = SDL_CreateRGBSurface(0, p->Width, p->Height, 8,0,0,0,0);
+  surface = SDL_CreateRGBSurface(0, p->Width, p->Height, 32,0,0,0,0);
   if (surface == NULL) {
         SDL_Log("SDL_CreateRGBSurface() failed: %s", SDL_GetError());
         exit(1);
@@ -111,6 +111,11 @@ Pico8* NewPico8() {
   
   p->FPS = 60.0;
   p->PaletteModified = false;
+  
+
+  p->frames=0;
+  p->curr_time=0;
+  p->prev_time=0;
 
   return p;
 }
@@ -543,8 +548,65 @@ int Pico8_set_color(Pico8*self,int p) {
 
 
 void Pico8_Flip(Pico8*self,LispCmd*lisp_cmd) {
+  SDL_Rect blit_rect;
+  int window_w,window_h;
+  int bigger_border;
+  int _blit_x,_blit_y;
+
+  SDL_Rect stretchRect;
+  stretchRect.x = 0;
+  stretchRect.y = 0;
+  
+  if(self->HWND != NULL) {
+    window_w = self->HWND->w;
+    window_h = self->HWND->h;
+    
+    blit_rect= (SDL_Rect){self->CameraDx,self->CameraDy,0,0};
+    SDL_SetSurfacePalette(self->DisplayCanvas,self->DisplayPalette);
+    
+    Surface_Blit(self->DisplayCanvas,self->DrawCanvas,&blit_rect,NULL);
+    
+    if (window_w > self->Width && window_h > self->Height) {
+      bigger_border = window_w;
+      if(bigger_border > window_h) {
+        bigger_border = window_h;
+      }
+      _blit_x = (window_w - bigger_border)/2;
+      _blit_y = (window_h - bigger_border)/2;
+
+      stretchRect.x = _blit_x;
+      stretchRect.y = _blit_y;
+      stretchRect.w = bigger_border;
+      stretchRect.h = bigger_border;
+      
+      if( SDL_BlitScaled( self->DisplayCanvas, NULL, self->HWND, &stretchRect) != 0 ){
+        printf("Scale blit error %s\n",SDL_GetError());
+      }
+
+    }else {
+      Surface_Blit(self->HWND,self->DisplayCanvas,&stretchRect,NULL);
+    }
+  
+    self->CameraDx=0;
+    self->CameraDy=0;
+    
+
+  
+  }
+  
+  self->frames+=1;
+  self->curr_time = SDL_GetTicks();
+  if ( (self->curr_time - self->prev_time) > 10000 ) {
+    int fps = self->frames/10;
+    printf("pico8 fps is %d\n",fps);
+    self->frames=0;
+    self->prev_time= self->curr_time;
+  
+  }
+
 
 }
+
 void Pico8_Print(Pico8*self,LispCmd*lisp_cmd) {
 
 }

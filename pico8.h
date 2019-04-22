@@ -63,6 +63,10 @@ typedef struct {
   int res_offset;
 
   float FPS;
+  int frames;
+  int curr_time;
+  int prev_time;
+
 }Pico8;
 
 Pico8* NewPico8();
