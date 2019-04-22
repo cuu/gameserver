@@ -14,6 +14,7 @@ bool Pixel(SDL_Surface*surf,SDL_Color *c, int x,int y) {
   addr = y*surf->pitch+x*bytes_per_pixel;
   
 	if(x < surf->clip_rect.x || x >= surf->clip_rect.x + surf->clip_rect.w || y < surf->clip_rect.y || y >= surf->clip_rect.y + surf->clip_rect.h) {
+    printf("Pixels coord error\n");
 		return false;
 	}
   

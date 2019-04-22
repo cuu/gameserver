@@ -102,7 +102,7 @@ Pico8* NewPico8() {
   p->Cursor[1] = 0;
 
   // clear resource
-  memset(p->Map,0,64*128);
+  memset(p->Map,0,64*128); //64*128=8192
   memset(p->Sprite,0,128*128);
   memset(p->SpriteFlags,0,256);
   
@@ -162,21 +162,19 @@ void Pico8_SetGff(Pico8*self,char*data) {
   char tmp[3];
   
   data = trim(data,"\n");
-  
-  for(i=0;i<strlen(data);i+=2) {
-    memset(tmp,0,3);
-    tmp[0] = data[i];
-    tmp[1] = data[i+1];
-    ret = strtol(tmp,NULL,16);
-    self->SpriteFlags[col] = (unsigned char)ret;
-    col++;
-    if(col > 127) {
-      break;
+  if(self->Version > 2) {
+    for(i=0;i<strlen(data);i+=2) {
+      memset(tmp,0,3);
+      tmp[0] = data[i];
+      tmp[1] = data[i+1];
+      ret = strtol(tmp,NULL,16);
+      self->SpriteFlags[self->res_offset] = (unsigned char)ret;
+      self->res_offset+=1;
+      if(self->res_offset > 255) {
+        break;
+      }
     }
   }
-
-  self->res_offset+=1;
-
 }
 
 void Pico8_SetMap(Pico8*self,char*data) { // 32*128, 32*128,two parts
@@ -190,13 +188,15 @@ void Pico8_SetMap(Pico8*self,char*data) { // 32*128, 32*128,two parts
     tmp[0] = data[i];
     tmp[1] = data[i+1];
     ret = strtol(tmp,NULL,16);
+    //printf("%d ",(unsigned char)ret);
     self->Map[self->res_offset + col*64] = (unsigned char)ret;
     col++;
     if(col > 127) {
       break;
     }
-  }  
+  }
 
+  //printf("\n");
   self->res_offset+=1;
 
 }
@@ -217,6 +217,7 @@ void Pico8_set_shared_map(Pico8*self) {
         lo = self->Sprite[sx+sy*128];
         hi = self->Sprite[sx+1+sy*128];
         v = (hi << 4) | lo;
+        //printf("%d ",v);
         self->Map[ty+tx*64] = v;
         
         shared+=1;
@@ -255,7 +256,7 @@ void Pico8_Version(Pico8*self,LispCmd*lisp_cmd) {
   }
 
   tmp = CmdArg_GetInt(&lisp_cmd->Args[0]);
-  printf("Set version %d %s\n",tmp,lisp_cmd->Args[0].Value);
+  printf("Set version %d\n",tmp);
   self->Version = tmp;
   
 }
@@ -284,6 +285,7 @@ void Pico8_ResOver(Pico8*self,LispCmd*lisp_cmd) {
 void Pico8_ResDone(Pico8*self,LispCmd*lisp_cmd) {
   
   Pico8_set_shared_map(self);
+
 }
 
 
@@ -323,7 +325,7 @@ void Pico8_Spr(Pico8*self,LispCmd*lisp_cmd) {
   int addr;
   unsigned char v;
 
-  if(lisp_cmd->Argc==0) return;
+  if(lisp_cmd->Argc==0) { printf("spr no arguments\n");return;}
 
   if(lisp_cmd->Argc > 2 ) {
     n = CmdArg_GetInt(&lisp_cmd->Args[0]);
@@ -387,9 +389,11 @@ void Pico8_Spr(Pico8*self,LispCmd*lisp_cmd) {
     {
       addr = start_x+_x +(start_y+_y)*self->Width;
       v = self->Sprite[addr];
+      printf("%d ",v);
       Pixel(gfx_piece,&self->draw_colors[v],_x,_y);
     }
   
+  printf("\n");
   xflip = false;
   yflip = false;
   
@@ -420,6 +424,7 @@ void Pico8_Spr(Pico8*self,LispCmd*lisp_cmd) {
 }
 
 void Pico8_draw_map(Pico8*self,int n,int x, int  y) {
+
   int idx=0,idy =0;
   int start_x = 0,start_y = 0;
   int w_=0, h_=0;
@@ -449,6 +454,7 @@ void Pico8_draw_map(Pico8*self,int n,int x, int  y) {
       Pixel(gfx_piece,&self->draw_colors[v],_x,_y);
     }
   
+  
   _r = (SDL_Rect){x,y,0,0};
   Surface_Blit(self->DrawCanvas,gfx_piece,&_r,NULL);
   SDL_FreeSurface(gfx_piece);
@@ -464,6 +470,7 @@ void Pico8_Map(Pico8*self,LispCmd*lisp_cmd) {
   unsigned char v;
 
   if(lisp_cmd->Argc==0) {
+    printf("Map has no arguments\n");
     return;
   }
 
@@ -491,12 +498,14 @@ void Pico8_Map(Pico8*self,LispCmd*lisp_cmd) {
   if(lisp_cmd->Argc > 6 ){
     bitmask =  CmdArg_GetInt(&lisp_cmd->Args[6]);
   }
-
+  
+  //printf("\n\n");
   for(y=0;y<cel_h;y++) {
     for(x=0;x<cel_w;x++) {
       addr = cel_y + y +(cel_x+x)*64;
       if(addr < 8192) {
         v = self->Map[addr];
+        //printf(" %d==%d ",addr,v);
         if (v > 0 ) {
           if(bitmask == 0 ) {
             Pico8_draw_map(self,v,sx+x*8,sy+y*8);
@@ -505,6 +514,8 @@ void Pico8_Map(Pico8*self,LispCmd*lisp_cmd) {
               Pico8_draw_map(self,v,sx+x*8,sy+y*8);
             }
           }
+        }else {
+          //printf("v is <=0 %d\n",v);
         }
       }else {
         printf("addr >= 8192,exceeds %d\n",addr);
@@ -512,6 +523,7 @@ void Pico8_Map(Pico8*self,LispCmd*lisp_cmd) {
     }
   }
   
+  //printf("\n");
 }
 
 int Pico8_Color(Pico8*self,LispCmd*lisp_cmd) {

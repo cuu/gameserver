@@ -180,7 +180,8 @@ char* GameThread_ProcessLispCmd(GameThread*self,char*cmd) {
       Pico8_Spr(self->ThePico8,lisp_cmd);
 
     }else if(strcmp(lisp_cmd->Func,"map") == 0) {
-
+      
+      //printf("%s\n",cmd);
       Pico8_Map(self->ThePico8,lisp_cmd);
 
     }else if(strcmp(lisp_cmd->Func,"color")==0) {
