@@ -52,8 +52,8 @@ SDL_Surface* Transform_Flip(SDL_Surface*src_surf,bool xflip,bool yflip) {
   
 	newsurf = newsurf_fromsurf(src_surf, src_surf->w,src_surf->h);
 
-	if newsurf ->w != src_surf->w || newsurf->h != src_surf->h {
-		panic("Flip destination surface create failed")
+	if(newsurf ->w != src_surf->w || newsurf->h != src_surf->h ){
+		panic("Flip destination surface create failed");
 	}
   
   pixsize = src_surf->format->BytesPerPixel;

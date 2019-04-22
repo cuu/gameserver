@@ -5,13 +5,13 @@
 
 bool Pixel(SDL_Surface*surf,SDL_Color *c, int x,int y) {
   unsigned char*pixels= NULL;
-  int bytes_per_pixels=0;
+  int bytes_per_pixel=0;
   int addr;
 
   pixels = (unsigned char*)surf->pixels;
   
-  bytes_per_pixels = surf->format->BytesPerPixel;
-  addr = y*surf->pitch+x*bytes_per_pixels;
+  bytes_per_pixel = surf->format->BytesPerPixel;
+  addr = y*surf->pitch+x*bytes_per_pixel;
   
 	if(x < surf->clip_rect.x || x >= surf->clip_rect.x + surf->clip_rect.w || y < surf->clip_rect.y || y >= surf->clip_rect.y + surf->clip_rect.h) {
 		return false;
@@ -49,7 +49,7 @@ void Draw_Rect(SDL_Surface*surf,SDL_Color *color,SDL_Rect*_rect,int border_width
   l = _rect->x;
   r = _rect->x + _rect->w -1;
   t = _rect->y;
-  b = _rect->y + _rect_>h -1;
+  b = _rect->y + _rect->h -1;
 
   //4x2
   
@@ -74,11 +74,11 @@ static int compare_int(const void *a, const void *b)
     return (*(const int *)a) - (*(const int *)b);
 }
 
-func draw_fillpoly(SDL_Surface*surf, int*vx, int*vy, int numpoints, SDL_Color*col) {
+void draw_fillpoly(SDL_Surface*surf, int*vx, int*vy, int numpoints, SDL_Color*col) {
   int i,j;
 	int miny=0;
 	int maxy=0;
-  int minx,miny;
+  int minx,maxx;
 	int y=0;
 	int x1=0;
 	int y1=0;
@@ -94,7 +94,7 @@ func draw_fillpoly(SDL_Surface*surf, int*vx, int*vy, int numpoints, SDL_Color*co
 	/* Determine Y maxima */
 	miny = vy[0];
 	maxy = vy[0];
-	for (i:=1; i < numpoints; i++) {
+	for (i=1; i < numpoints; i++) {
 		miny = MIN(miny,vy[i]);
 		maxy = MAX(maxy,vy[i]);
 	}
@@ -102,7 +102,7 @@ func draw_fillpoly(SDL_Surface*surf, int*vx, int*vy, int numpoints, SDL_Color*co
 	/* Draw, scanning y */
 	for (y=miny;y<=maxy;y++) {
 		ints = 0;
-		for (i:=0; i< numpoints;i++ ){
+		for (i=0; i< numpoints;i++ ){
 			if (i == 0) {
 				ind1 = numpoints -1;
 				ind2 = 0;
@@ -152,8 +152,8 @@ func draw_fillpoly(SDL_Surface*surf, int*vx, int*vy, int numpoints, SDL_Color*co
     
     qsort(polyints, ints, sizeof(int), compare_int); 
 
-		for i:=0;i<ints;i+=2 {
-			drawhorzlineclip(surf, col, polyints[i], y, polyints[i+1])
+		for( i=0;i<ints;i+=2 ){
+			drawhorzlineclip(surf, col, polyints[i], y, polyints[i+1]);
 		}
 	}
   
@@ -179,7 +179,7 @@ SDL_Rect Polygon(SDL_Surface*surf, SDL_Color*color,int**points,int points_number
   }
   
   bytes_per_pixel = surf->format->BytesPerPixel;
-  if (bytes_per_pixel <= 0 o|| bytes_per_pixel > 4) {
+  if (bytes_per_pixel <= 0 || bytes_per_pixel > 4) {
     panic("unsupport bit depth for line draw");
   }
   
@@ -210,10 +210,10 @@ SDL_Rect Polygon(SDL_Surface*surf, SDL_Color*color,int**points,int points_number
     xlist[numpoints] = x;
     ylist[numpoints] = y;
     numpoints+=1;
-    left   = MAX(x,left)
-    top    = MAX(y,top)
-    right  = MAX(x,right)
-    bottom = MAX(y,bottom)    
+    left   = MAX(x,left);
+    top    = MAX(y,top);
+    right  = MAX(x,right);
+    bottom = MAX(y,bottom);
   }
   
   draw_fillpoly(surf,xlist,ylist,numpoints,color);
@@ -221,7 +221,7 @@ SDL_Rect Polygon(SDL_Surface*surf, SDL_Color*color,int**points,int points_number
 	left = MAX(left,surf->clip_rect.x);
 	top  = MAX(top, surf->clip_rect.y);
 	right = MIN(right,surf->clip_rect.x + surf->clip_rect.w);
-	bottom = MIN(bottom, surf->clip_rect.Y + surf->clip_rect.h);
+	bottom = MIN(bottom, surf->clip_rect.y + surf->clip_rect.h);
   
   free(xlist);
   free(ylist);

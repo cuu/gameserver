@@ -70,6 +70,8 @@ Pico8* NewPico8();
 void Pico8_Version(Pico8*self,LispCmd*lisp_cmd);
 void Pico8_Res(Pico8*self,LispCmd*lisp_cmd);
 void Pico8_ResOver(Pico8*self,LispCmd*lisp_cmd);
+void Pico8_ResDone(Pico8*self,LispCmd*lisp_cmd);
+
 void Pico8_SetResource(Pico8*self,char*data);
 
 void Pico8_Cls(Pico8*self,LispCmd*lisp_cmd);
@@ -88,8 +90,16 @@ void Pico8_Rect(Pico8*self,LispCmd*lisp_cmd);
 
 void Pico8_Palt(Pico8*self,LispCmd*lisp_cmd);
 
-
 void Pico8_Pal(Pico8*self,LispCmd*lisp_cmd);
+
+
+void Pico8_set_shared_map(Pico8*self);
+void Pico8_draw_map(Pico8*self,int n,int x, int  y);
+int Pico8_set_color(Pico8*self,int p);
+void Pico8_set_palt(Pico8*self,int c,int t);
+
+
+
 
 
 #endif

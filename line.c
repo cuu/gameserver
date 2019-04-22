@@ -4,7 +4,7 @@
 #include "line.h"
 
 
-int encode(int x,int y,int left, int top,int right,int bottom ) {
+static int encode(int x,int y,int left, int top,int right,int bottom ) {
 	int code = 0;
 
 	if (x < left ) {
@@ -19,17 +19,17 @@ int encode(int x,int y,int left, int top,int right,int bottom ) {
 	if (y > bottom) {
 		code |= BOTTOM_EDGE;
 	}
-	return code
+	return code;
 }
 
-bool inside(int a) {
+static bool inside(int a) {
 	if (a > 0) {
 		return false;
 	}//<=0;
 	return true;
 }
 
-bool accept(int a,int b ) {
+static bool accept(int a,int b ) {
   int ret;
   ret = a | b;
   if (ret > 0 ) {
@@ -40,9 +40,9 @@ bool accept(int a,int b ) {
 
 }
 
-bool reject(int a,int b )  {
+static bool reject(int a,int b )  {
 	int ret ;
-  ret ;= a & b;
+  ret = a & b;
 	if (ret > 0) {
 		return true;
 	}
@@ -61,7 +61,7 @@ SDL_Rect Lines(SDL_Surface *surf,SDL_Color *col,bool closed, int**pointlist,int 
 
   if(length < 2) {
     panic("draw lines at least contains more than 1 points pair" );
-    return;
+  
   }
   
   int pts[4];
@@ -69,15 +69,15 @@ SDL_Rect Lines(SDL_Surface *surf,SDL_Color *col,bool closed, int**pointlist,int 
   x = pointlist[0][0];
   y = pointlist[0][1];
   
-  startx  = x
-  pts[0]  = x
-  left    = x
-  right   = x
+  startx  = x;
+  pts[0]  = x;
+  left    = x;
+  right   = x;
 
-  starty  = y
-  pts[1]  = y
-  top     = y
-  bottom  = y
+  starty  = y;
+  pts[1]  = y;
+  top     = y;
+  bottom  = y;
 
   if (width < 1) {
     return (SDL_Rect){x,y,0,0};
@@ -86,7 +86,7 @@ SDL_Rect Lines(SDL_Surface *surf,SDL_Color *col,bool closed, int**pointlist,int 
   drawn = 1;
   
   for(loop=1;loop < length;loop++) {
-    item = &pointlist[loop];
+    item = pointlist[loop];
     
     x = item[0];
     y = item[1];
@@ -97,7 +97,7 @@ SDL_Rect Lines(SDL_Surface *surf,SDL_Color *col,bool closed, int**pointlist,int 
     starty = y;
     pts[2] = x;
     pts[3] = y;   
-    if( clip_and_draw_line_width(surf, &surf.ClipRect, col, width, pts) > 0 ) {
+    if( clip_and_draw_line_width(surf, &surf->clip_rect, col, width, pts) > 0 ) {
       left = MIN(MIN(pts[0],pts[2]),left);
       top  =  MIN(MIN(pts[1],pts[3]),top);
       right =  MAX(MAX(pts[0],pts[2]),right);
@@ -106,7 +106,7 @@ SDL_Rect Lines(SDL_Surface *surf,SDL_Color *col,bool closed, int**pointlist,int 
   }  
   
   if(closed==true && drawn > 2 ) {
-    item = &pointlist[0];
+    item = pointlist[0];
     x = item[0];
     y = item[1];
     
@@ -123,7 +123,7 @@ SDL_Rect Lines(SDL_Surface *surf,SDL_Color *col,bool closed, int**pointlist,int 
 
 }
 
-SDL_Rect Line(SDL_Surface*surf,SDL_Color*col,int x1,int y1,int x2,int y2 int width ) {
+SDL_Rect Line(SDL_Surface*surf,SDL_Color*col,int x1,int y1,int x2,int y2,int width ) {
   
   int pts[4];
   int anydraw;
@@ -139,7 +139,7 @@ SDL_Rect Line(SDL_Surface*surf,SDL_Color*col,int x1,int y1,int x2,int y2 int wid
     return (SDL_Rect){x1,y1,0,0};
   }
 
-  anydraw := clip_and_draw_line_width(surf,&surf->clip_rect, col, width,pts);
+  anydraw = clip_and_draw_line_width(surf,&surf->clip_rect, col, width,pts);
 
   if(anydraw==0) {
     return (SDL_Rect){x1,y1,0,0};
@@ -205,7 +205,7 @@ int clip_and_draw_line_width(SDL_Surface*surf,SDL_Rect*rect,SDL_Color*col,int wi
 int clip_and_draw_line(SDL_Surface*surf, SDL_Rect*rect, SDL_Color*col, int*pts)  {
 
   if ( clipline(pts, rect->x,rect->y,rect->x+ rect->w-1, rect->y+rect->h-1 ) == 0 ){
-    return 0
+    return 0;
   }
 
   if (pts[1] == pts[3]) {
@@ -216,7 +216,7 @@ int clip_and_draw_line(SDL_Surface*surf, SDL_Rect*rect, SDL_Color*col, int*pts) 
     drawline(surf, col, pts[0],pts[1],pts[2],pts[3]);
   }
 
-  return 1
+  return 1;
 }
 
 int clipline( int *pts, int left,int top,int right, int bottom) {
@@ -502,7 +502,7 @@ void drawvertline(SDL_Surface*surf, SDL_Color*col, int x1,int y1,int y2 ) {
 		Pixel(surf,col, x1,y1);
 	}
 
-  bytes_per_pixel := surf->format->BytesPerPixel;
+  bytes_per_pixel = surf->format->BytesPerPixel;
 
 	pixels = surf->pixels;
 	pitch  = surf->pitch;

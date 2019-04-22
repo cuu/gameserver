@@ -6,11 +6,13 @@
 
 #include <SDL.h>
 
+#include "types.h"
 
-int Pixel(SDL_Surface*surf,SDL_Color*c, int x,int y);
+bool Pixel(SDL_Surface*surf,SDL_Color*c, int x,int y);
 
 void Draw_Rect(SDL_Surface*surf,SDL_Color *color,SDL_Rect*_rect,int border_width );
 
+SDL_Rect Polygon(SDL_Surface*surf, SDL_Color*color,int**points,int points_number, int border_width);
 
 
 

@@ -73,7 +73,7 @@ mill_coroutine void start_udp_client(GameThread*gs) {
         printf("buff overflow\n");
       }
     }else {
-      buf[nbytes-1]='\0';
+      buf[sz-1]='\0';
       GameThread_ProcessLispCmds(gs,buf);
         
     }

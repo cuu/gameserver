@@ -10,8 +10,8 @@ SDL_Rect Surface_Blit(SDL_Surface*dst, SDL_Surface*source,SDL_Rect*dest,SDL_Rect
     dx = 0;
     dy = 0;
   }else {
-    dx = dest.x;
-    dy = dest.y;
+    dx = dest->x;
+    dy = dest->y;
   }
 
   dest_rect = (SDL_Rect){0,0,0,0};

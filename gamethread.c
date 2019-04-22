@@ -190,7 +190,7 @@ char* GameThread_ProcessLispCmd(GameThread*self,char*cmd) {
 
       Pico8_Print(self->ThePico8,lisp_cmd);
 
-    }else if(strcmp(lisp_cmd->Func,"rectfill")==0 {
+    }else if(strcmp(lisp_cmd->Func,"rectfill")==0) {
 
       Pico8_Rectfill(self->ThePico8,lisp_cmd);
 

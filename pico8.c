@@ -2,6 +2,9 @@
 #include "draw.h"
 #include "utils.h"
 #include "lisp_parser.h"
+#include "transform.h"
+#include "surface.h"
+
 
 Pico8* NewPico8() {
   SDL_Surface *surface;
@@ -118,7 +121,7 @@ void Pico8_sync_draw_pal(Pico8*self) {
     self->draw_colors[i] = self->pal_colors[ self->DrawPaletteIdx[i]  ];
   }
 
-  SDL_SetPaletteColors(p->DrawPalette, p->draw_colors,0,16);  
+  SDL_SetPaletteColors(self->DrawPalette, self->draw_colors,0,16);  
 }
 
 void Pico8_SetGfx(Pico8*self,char*data) { //data is one line 
@@ -129,7 +132,7 @@ void Pico8_SetGfx(Pico8*self,char*data) { //data is one line
   
   data = trim(data,"\n");
   
-  if(strlen(data) < 3 ) { return ; }
+  if(strlen(data) < 3 ) { return; }
 
   for(i=0;i<strlen(data);i++) {
     memset(tmp,0,2);
@@ -193,7 +196,7 @@ void Pico8_SetMap(Pico8*self,char*data) { // 32*128, 32*128,two parts
 
 }
 
-void Pico8_SetSharedMap(Pico8*self,LispCmd*lisp_cmd) {
+void Pico8_set_shared_map(Pico8*self) {
   
   int shared=0;
 
@@ -275,7 +278,7 @@ void Pico8_ResOver(Pico8*self,LispCmd*lisp_cmd) {
 
 void Pico8_ResDone(Pico8*self,LispCmd*lisp_cmd) {
   
-  Pico8_SetSharedMap(self,lisp_cmd);
+  Pico8_set_shared_map(self);
 }
 
 
@@ -359,7 +362,7 @@ void Pico8_Spr(Pico8*self,LispCmd*lisp_cmd) {
     _sw = self->Width - start_x;
   }
 
-  if(start_y + _h > self.Height) {
+  if(start_y + _h > self->Height) {
     _sh = self->Height - start_y;
   }
   
@@ -374,12 +377,12 @@ void Pico8_Spr(Pico8*self,LispCmd*lisp_cmd) {
   SDL_SetColorKey(gfx_piece,SDL_TRUE,0);
   
 
-  for(_x:=0;_x<_sw;_x++)
-    for(_y:=0;_y<_sh;_y++)
+  for(_x=0;_x<_sw;_x++)
+    for(_y=0;_y<_sh;_y++)
     {
       addr = start_x+_x +(start_y+_y)*self->Width;
       v = self->Sprite[addr];
-      Pixel(gfx_piece,self->draw_colors[v],_x,_y);
+      Pixel(gfx_piece,&self->draw_colors[v],_x,_y);
     }
   
   xflip = false;
@@ -403,7 +406,7 @@ void Pico8_Spr(Pico8*self,LispCmd*lisp_cmd) {
 
   _r = (SDL_Rect){x,y,0,0};
   
-  Surface_Blit(self->DrawCanvas,gfx_piece_new,_r,NULL);
+  Surface_Blit(self->DrawCanvas,gfx_piece_new,&_r,NULL);
   
   SDL_FreeSurface(gfx_piece);
   SDL_FreeSurface(gfx_piece_new);
@@ -417,9 +420,9 @@ void Pico8_draw_map(Pico8*self,int n,int x, int  y) {
   int w_=0, h_=0;
   int addr;
   int _x,_y;
-
+  SDL_Surface*gfx_piece=NULL;
   SDL_Rect _r;
-
+  unsigned char v;
 
   idx = n%16;
   idy = n/16;
@@ -433,16 +436,16 @@ void Pico8_draw_map(Pico8*self,int n,int x, int  y) {
   SDL_SetSurfacePalette(gfx_piece,self->DrawPalette);
   SDL_SetColorKey(gfx_piece,SDL_TRUE,0);
   
-  for(_x:=0;_x<w_;_x++)
-    for(_y:=0;_y<h_;_y++)
+  for(_x=0;_x<w_;_x++)
+    for(_y=0;_y<h_;_y++)
     {
       addr = start_x+_x +(start_y+_y)*self->Width;
       v = self->Sprite[addr];
-      Pixel(gfx_piece,self->draw_colors[v],_x,_y);
+      Pixel(gfx_piece,&self->draw_colors[v],_x,_y);
     }
   
   _r = (SDL_Rect){x,y,0,0};
-  Surface_Blit(self->DrawCanvas,gfx_piece_new,_r,NULL);
+  Surface_Blit(self->DrawCanvas,gfx_piece,&_r,NULL);
   SDL_FreeSurface(gfx_piece);
   
 }
@@ -569,7 +572,7 @@ void Pico8_Rectfill(Pico8*self,LispCmd*lisp_cmd) {
     col = CmdArg_GetInt(&lisp_cmd->Args[4]);
   }
 
-  Pico8_set_color(col);
+  Pico8_set_color(self,col);
   
   w = (x1-x0)+1;
   h = (y1-y0)+1;
@@ -585,7 +588,7 @@ void Pico8_Rectfill(Pico8*self,LispCmd*lisp_cmd) {
   
   rect_ = (SDL_Rect){x0,y0,w,h};
   
-  Draw_Rect(self->DrawCanvas,self->draw_colors[self->PenColor], rect_,0);
+  Draw_Rect(self->DrawCanvas,&self->draw_colors[self->PenColor], &rect_,0);
 
 }
 
@@ -610,11 +613,11 @@ void Pico8_Rect(Pico8*self,LispCmd*lisp_cmd) {
   }
 
   
-  Pico8_set_color(col);
+  Pico8_set_color(self,col);
   
   rect_ = (SDL_Rect){x0+1,y0+1,x1-x0,y1-y0};
   
-  Draw_Rect(self->DrawCanvas,self->draw_colors[self->PenColor], rect_,1);
+  Draw_Rect(self->DrawCanvas,&self->draw_colors[self->PenColor], &rect_,1);
 
 }
 
@@ -638,15 +641,16 @@ void Pico8_Palt(Pico8*self,LispCmd*lisp_cmd) {
     t = CmdArg_GetInt(&lisp_cmd->Args[1]);
     c = c % 16;
     if(t == 1) {
-      self.PalTransparent[c] = 0;
+      self->PalTransparent[c] = 0;
     }else {
-      self.PalTransparent[c] = 1;
+      self->PalTransparent[c] = 1;
     }
   }
 }
 
 void Pico8_set_palt(Pico8*self,int c,int t) {
-
+  int i;
+  
   if (c == NONE && t == NONE ) {
     for(i=0;i<16;i++) {
       if(i==0) {
@@ -659,9 +663,9 @@ void Pico8_set_palt(Pico8*self,int c,int t) {
     
   c = c % 16;
   if(t == 1) {
-    self.PalTransparent[c] = 0;
+    self->PalTransparent[c] = 0;
   }else {
-    self.PalTransparent[c] = 1;
+    self->PalTransparent[c] = 1;
   }
     
 }
@@ -681,13 +685,13 @@ void Pico8_Pal(Pico8*self,LispCmd*lisp_cmd) {
       self->draw_colors[i]    = self->pal_colors[i];
     }
 
-    SDL_SetPaletteColors(p->DrawPalette, p->draw_colors,0,16);
-    SDL_SetPaletteColors(p->DisplayPalette, p->display_colors,0,16);
+    SDL_SetPaletteColors(self->DrawPalette, self->draw_colors,0,16);
+    SDL_SetPaletteColors(self->DisplayPalette, self->display_colors,0,16);
     
-    Pico8_set_palt(NONE,NONE);
+    Pico8_set_palt(self,NONE,NONE);
     Pico8_sync_draw_pal(self);
-    SDL_SetSurfacePalette(p->DisplayCanvas,p->DisplayPalette);
-    SDL_SetSurfacePalette(p->DrawCanvas,p->DrawPalette);
+    SDL_SetSurfacePalette(self->DisplayCanvas,self->DisplayPalette);
+    SDL_SetSurfacePalette(self->DrawCanvas,self->DrawPalette);
     self->PaletteModified = false;
     
   }else if(lisp_cmd->Argc == 3 ) {
@@ -700,14 +704,14 @@ void Pico8_Pal(Pico8*self,LispCmd*lisp_cmd) {
     if(p==1) {
       self->display_colors[c0] = self->pal_colors[c1];
       self->PaletteModified = true;
-      SDL_SetPaletteColors(p->DisplayPalette, p->display_colors,0,16);
-      SDL_SetSurfacePalette(p->DisplayCanvas,p->DisplayPalette);
+      SDL_SetPaletteColors(self->DisplayPalette, self->display_colors,0,16);
+      SDL_SetSurfacePalette(self->DisplayCanvas,self->DisplayPalette);
     }else if (p == 0 ) {
       
       self->DrawPaletteIdx[c0] = c1;
       self->PaletteModified  = true;
       Pico8_sync_draw_pal(self);
-      SDL_SetSurfacePalette(p->DrawCanvas,p->DrawPalette);
+      SDL_SetSurfacePalette(self->DrawCanvas,self->DrawPalette);
     }
   }
 
