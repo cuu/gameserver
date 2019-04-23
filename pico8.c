@@ -16,7 +16,8 @@ Pico8* NewPico8() {
   p->Width = 128;
   p->Height = 128;
   p->Version = 8;
-    
+  
+  /*
   p->pal_colors[0]  = (SDL_Color){0,0,0,255};
   p->pal_colors[1]  = (SDL_Color){29,43,83,255};
   p->pal_colors[2]  = (SDL_Color){126,37,83,255};
@@ -33,7 +34,24 @@ Pico8* NewPico8() {
   p->pal_colors[13] = (SDL_Color){131,118,156,255};
   p->pal_colors[14] = (SDL_Color){255,119,168,255};
   p->pal_colors[15] = (SDL_Color){255,204,170,255};
-  
+  */
+
+  p->pal_colors[0]  = (SDL_Color){0,0,0,255};
+  p->pal_colors[1]  = (SDL_Color){83,43,29,255};
+  p->pal_colors[2]  = (SDL_Color){83,37,126,255};
+  p->pal_colors[3]  = (SDL_Color){81,135,0,255};
+  p->pal_colors[4]  = (SDL_Color){54,82,171,255};
+  p->pal_colors[5]  = (SDL_Color){79,87,95,255};
+  p->pal_colors[6]  = (SDL_Color){199,195,194,255};
+  p->pal_colors[7]  = (SDL_Color){232,241,255,255};
+  p->pal_colors[8]  = (SDL_Color){77,0,255,255};
+  p->pal_colors[9]  = (SDL_Color){0,163,255,255};
+  p->pal_colors[10] = (SDL_Color){36,240,255,255};
+  p->pal_colors[11] = (SDL_Color){86,231,0,255};
+  p->pal_colors[12] = (SDL_Color){255,173,41,255};
+  p->pal_colors[13] = (SDL_Color){156,118,131,255};
+  p->pal_colors[14] = (SDL_Color){168,119,255,255};
+  p->pal_colors[15] = (SDL_Color){170,204,255,255};
     
   surface = SDL_CreateRGBSurface(0, p->Width, p->Height, 32,0,0,0,0);
   if (surface == NULL) {
@@ -399,7 +417,8 @@ void Pico8_Spr(Pico8*self,LispCmd*lisp_cmd) {
       addr = start_x+_x +(start_y+_y)*self->Width;
       v = self->Sprite[addr];
       //printf("spr %d %d ",addr,v);
-      Pixel(gfx_piece,&self->draw_colors[v],_x,_y);
+      if(v>0)
+        Pixel(gfx_piece,&self->draw_colors[v],_x,_y);
     }
   
 

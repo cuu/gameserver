@@ -5,7 +5,7 @@
 SDL_Surface* newsurf_fromsurf(SDL_Surface*surf, int width,int height) {
   SDL_Surface *newsurf=NULL;
   int key = 0;
-  unsigned char alpha=255;
+  unsigned char alpha=0;
   
   if( surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4 ) {
     printf("unsupport Surface bit depth for transform");
