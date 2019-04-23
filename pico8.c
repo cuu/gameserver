@@ -629,6 +629,62 @@ void Pico8_Flip(Pico8*self,LispCmd*lisp_cmd) {
 
 }
 
+
+void Pico8_Circ(Pico8*self,LispCmd*lisp_cmd) {
+  
+  int ox,oy,r,col;
+  col = -1;
+
+  if( lisp_cmd->Argc < 3 ) {
+    return;
+  }
+  
+  if(lisp_cmd->Argc > 2) {
+    ox = CmdArg_GetInt(&lisp_cmd->Args[0]);
+    oy = CmdArg_GetInt(&lisp_cmd->Args[1]);
+    r  = CmdArg_GetInt(&lisp_cmd->Args[2]);
+  }
+  
+  if(lisp_cmd->Argc > 3) {
+    col = CmdArg_GetInt(&lisp_cmd->Args[3]);
+  }
+  
+  Pico8_set_color(self,col);
+
+  Draw_Circle(self->DrawCanvas, &self->draw_colors[self->PenColor],ox,oy,r,1);
+
+}
+
+
+void Pico8_Circfill(Pico8*self,LispCmd *lisp_cmd) {
+  int cx,cy,r,col;
+  col = -1;
+  if(lisp_cmd->Argc <  3 ) {
+    return;
+  }
+  
+  if( lisp_cmd->Argc > 2 ) {
+    cx = CmdArg_GetInt(&lisp_cmd->Args[0]);
+    cy = CmdArg_GetInt(&lisp_cmd->Args[1]);
+    r  = CmdArg_GetInt(&lisp_cmd->Args[2]);
+  }
+  
+  if(lisp_cmd->Argc > 3) {
+    col = CmdArg_GetInt(&lisp_cmd->Args[3]);
+  }
+  
+  Pico8_set_color(self,col);
+  
+  Draw_Circle(self->DrawCanvas,&self->draw_colors[self->PenColor],cx,cy,r,0);
+
+}
+
+
+
+
+
+
+
 void Pico8_Rectfill(Pico8*self,LispCmd*lisp_cmd) {
   int x0,y0,x1,y1,col;
   int w,h;

@@ -278,6 +278,10 @@ char* GameThread_ProcessLispCmd(GameThread*self,char*cmd) {
     } else if(strcmp(lisp_cmd->Func,"ping") == 0 ) {
 
       GameThread_Pong(self,lisp_cmd);
+    }else if(strcmp(lisp_cmd->Func,"circ") == 0) {
+      Pico8_Circ(self->ThePico8,lisp_cmd);
+    }else if(strcmp(lisp_cmd->Func,"circfill") == 0) {
+      Pico8_Circfill(self->ThePico8,lisp_cmd);
     }
     
     if(lisp_cmd->Args !=NULL) {
