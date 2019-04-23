@@ -56,8 +56,9 @@ LispCmd* lisp_parser(char* lisp_str) {
           }else{
             break;
           }
+          
+          lastpos=i;
         }
-        lastpos = i;
       }
     }
     
@@ -118,7 +119,8 @@ LispCmd* lisp_parser(char* lisp_str) {
     if(segs[i][0] == '"') {
       lisp_cmd->Args[j].Type = 'S';
       strncpy(lisp_cmd->Args[j].Value, segs[i]+1, strlen(segs[i])-1-1 );
-
+      lisp_cmd->Args[j].Value[strlen(segs[i])-1-1  ]='\0';
+      
     }else if(strcmp(segs[i],"true") == 0 || strcmp(segs[i],"false") == 0 ) {
       lisp_cmd->Args[j].Type = 'B';
       strcpy(lisp_cmd->Args[j].Value,segs[i]);

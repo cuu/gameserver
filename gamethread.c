@@ -257,7 +257,7 @@ char* GameThread_ProcessLispCmd(GameThread*self,char*cmd) {
       Pico8_Flip(self->ThePico8,lisp_cmd);
 
     }else if(strcmp(lisp_cmd->Func,"print")==0) {
-
+      //printf("%s\n",cmd);
       Pico8_Print(self->ThePico8,lisp_cmd);
 
     }else if(strcmp(lisp_cmd->Func,"rectfill")==0) {

@@ -10,6 +10,7 @@
 
 #include "types.h"
 #include "lisp_parser.h"
+#include "font.h"
 
 #define RES_GFX    0
 #define RES_GFF    1

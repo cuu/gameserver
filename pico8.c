@@ -629,10 +629,6 @@ void Pico8_Flip(Pico8*self,LispCmd*lisp_cmd) {
 
 }
 
-void Pico8_Print(Pico8*self,LispCmd*lisp_cmd) {
-
-}
-
 void Pico8_Rectfill(Pico8*self,LispCmd*lisp_cmd) {
   int x0,y0,x1,y1,col;
   int w,h;
@@ -803,4 +799,42 @@ void Pico8_Pal(Pico8*self,LispCmd*lisp_cmd) {
 
 }
 
-
+void Pico8_Print(Pico8*self,LispCmd*lisp_cmd) {
+  char *text=NULL;
+  int x,y,c;
+  SDL_Rect rect_;
+  
+  x = self->Cursor[0];
+  y = self->Cursor[1];
+  c =1;
+  
+  
+  if(lisp_cmd->Argc ==0 || lisp_cmd->Argc==2) {
+    return;
+  }
+  
+  if(lisp_cmd->Argc > 0) {
+    text = CmdArg_GetStr(&lisp_cmd->Args[0]);
+    self->Cursor[1]+=6;
+  }
+  if(lisp_cmd->Argc > 2) {
+    x = CmdArg_GetInt(&lisp_cmd->Args[1]);
+    y = CmdArg_GetInt(&lisp_cmd->Args[2]);
+    self->Cursor[0] = x;
+    self->Cursor[1] = y;
+  }
+  
+  if(lisp_cmd->Argc > 3) {
+    c = CmdArg_GetInt(&lisp_cmd->Args[3]);
+  }
+  
+  Pico8_set_color(self,c);
+  
+  SDL_Surface*imgText = Font_Render(self->Font,text,false,&self->draw_colors[self->DrawPaletteIdx[self->PenColor]],NULL);
+  SDL_SetColorKey(imgText,SDL_TRUE,0);
+  
+  rect_ = (SDL_Rect){x,y,0,0};
+  Surface_Blit(self->DrawCanvas,imgText,&rect_,NULL);
+  SDL_FreeSurface(imgText);
+  
+}
