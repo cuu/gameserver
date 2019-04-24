@@ -743,7 +743,10 @@ void Pico8_Rectfill(Pico8*self,LispCmd*lisp_cmd) {
   
   rect_ = (SDL_Rect){x0,y0,w,h};
   
-  Draw_Rect(self->DrawCanvas,&self->draw_colors[self->PenColor], &rect_,0);
+//  Draw_Rect(self->DrawCanvas,&self->draw_colors[self->PenColor], &rect_,0);
+  SDL_Color *draw_color = &self->draw_colors[self->PenColor];
+  
+  SDL_FillRect(self->DrawCanvas, &rect_,SDL_MapRGB(self->DrawCanvas->format, draw_color->b,draw_color->g,draw_color->r));
 
 }
 
