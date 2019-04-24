@@ -25,6 +25,7 @@ local pico8 = {
   cursor = {0, 0},
   camera_x = 0, 
   camera_y = 0, 
+  frames = 0,
 }
 
 local RES = {
@@ -94,25 +95,6 @@ function api.btn_remote(i,p)
 	
 end
 
-function api.btnp(i,p)
-	local thing
-	local ret
-
-	if type(i) == 'number' then
-		p = p or 0
-		if __keymap[p] and __keymap[p][i] then
-				ret = api.server.btnp( __keymap[p][i],p)
-				if ret == "TRUE" then
-					return true
-				else 
-					return false
-				end
-		end
-	end
-	
-	return false
-	
-end
 
 function api.mget(x,y) 
 
@@ -522,7 +504,9 @@ function api.load_p8_text(filename)
   api.server.send_pico8_version(version)
 
   api.server.send_resource(RES.GFX,  gfxdata)
-  api.server.send_resource(RES.GFF,  gffdata:sub(1,#gffdata-1))
+  --api.server.send_resource(RES.GFF,  gffdata:sub(1,#gffdata-1))
+	api.server.send_resource(RES.GFF,  gffdata)
+
   api.server.send_resource(RES.SFX,  sfxdata)
   api.server.send_resource(RES.MAP,  mapdata)
   api.server.send_resource(RES.MUSIC,musicdata)
@@ -736,8 +720,7 @@ function api.line(x0,y0,x1,y1,col)
 end
 
 function api.time()
-  local ret = server.time()
-  return tonumber(ret)
+  return pico8.frames/30
 end
 
 function api.reboot()

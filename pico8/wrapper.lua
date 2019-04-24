@@ -52,7 +52,7 @@ function UDP.send() -- must inside lua's coroutine
   
   -- print("safe_tcp_send data is " ,data ,#data)
   if #UDP.data == 0 then 
-    print("data is zero",UDP.data)
+    print("UDP.send data is zero",UDP.data)
     return nil
   end
 
@@ -87,6 +87,7 @@ end
 
 function UDP.cache(data)
   --UDP.data = UDP.data..data.."\n"
+  --print(data)
   UDP.data[#UDP.data+1] = data
   
 end
@@ -128,7 +129,7 @@ function TCP.send(data)
   local ret2
   -- print("safe_tcp_send data is " ,data ,#data)
   if #data == 0 then 
-    print("data is zero",data)
+    print("TCP.send data is zero",data)
     return nil
   end
   
@@ -323,7 +324,8 @@ function draw(cart)
   local frame_time_ms = frame_time*1000
   
   while true do
-
+    api.pico8.frames = api.pico8.frames +1
+    
     if cart._update then cart._update() end
     if cart._update60 then cart._update60() end
 
@@ -364,6 +366,29 @@ function api.btn(i,p)
 
 end
 
+
+function api.btnp(i,p)
+	local thing
+	local ret
+
+	if type(i) == 'number' then
+    i= i+1
+		p = p or 0
+		if __keymap[p] and __keymap[p][i] then
+				ret = __keymap[p][i][1]
+				if ret >= 0 then
+					return true
+				else 
+					return false
+				end
+		end
+	end
+	
+	return false
+	
+end
+
+
 function api.run()
   
 end
@@ -396,7 +421,7 @@ function RunLoop(file)
     end
 
 		if cart._init then cart._init() end
-    
+      
 		 draw(cart)
   end
 end

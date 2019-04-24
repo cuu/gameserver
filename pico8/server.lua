@@ -1,33 +1,4 @@
-json = require("json")
-
 local server = {Network=nil,NetworkTCP=nil}
-
-function safe_format_json(funcname,...)
-  local ret = {Fc=funcname}
-  local args = {}
- 
-  for i, v in ipairs{...} do
-    local arg = {Typ="",Val=""}
-    if type(v) == "string" then
-      arg.Typ="S"
-    end 
-    if type(v) == "number" then
-      arg.Typ="I"
-    end
-    if type(v) == "boolean" then
-      arg.Typ="B"
-    end
-    arg.Val=v
-
-    table.insert(args,arg)
-  end 
-  
-  if #args > 0 then
-    ret.Ags = args
-  end 
-
-  return json.encode(ret)
-end
 
 -- lisp style 
 function safe_format(funcname,...) 
@@ -97,12 +68,12 @@ end
 
 function server.btn(codestr,playernumber)
 	local thing = safe_format("btn", codestr,playernumber)
-	return server.Network.send(thing)
+	return server.Network.cache(thing)
 end
 
 function server.btnp(codestr,playernumber)
 	local thing = safe_format("btnp", codestr,playernumber)
-	return server.Network.send(thing)
+	return server.Network.cache(thing)
 end
 
 function server.sspr(sx,sy,sw,sh,dx,dy,dw,dh,flip_x,flip_y)
@@ -127,8 +98,9 @@ function server.color(c)
 end
 
 function server.pset(x,y,c)
+
   local thing = safe_format("pset",x,y,c)
-  return server.Network.send(thing)
+  return server.Network.cache(thing)
 end
 
 function server.cursor(x,y)
@@ -136,14 +108,9 @@ function server.cursor(x,y)
   return server.Network.cache(thing)
 end
 
-function server.mget(x,y)
- local thing = safe_format("mget",x,y)
- return server.Network.send(thing)
-end
-
 function server.mset(x,y,v)
  local thing = safe_format("mset",x,y,v)
- server.Network.send(thing)
+ server.Network.cache(thing)
 end
 
 function server.rect(x0,y0,x1,y1,col)
@@ -213,11 +180,6 @@ function server.line(x0,y0,x1,y1,col)
   server.Network.cache(thing)
 end
 
-function server.time()
-  local thing = safe_format("time")
-  return server.Network.send(thing)
-end
-
 function server.pal(c0,c1,p)
   local thing
   if type(c0) ~= 'number' then
@@ -258,7 +220,7 @@ function server.fget(n,f)
     thing = safe_format("fget",n,f)
   end
  	
-	local ret = server.Network.send(thing)
+	local ret = server.Network.cache(thing)
 	
 	return ret 
 end
