@@ -45,7 +45,7 @@ bool Pixel(SDL_Surface*surf,SDL_Color *c, int x,int y) {
 
 void Draw_Rect(SDL_Surface*surf,SDL_Color *color,SDL_Rect*_rect,int border_width ) {
   int l,r,t,b;
-  int points[4][2];
+  Point points[4];
   
   l = _rect->x;
   r = _rect->x + _rect->w -1;
@@ -54,19 +54,19 @@ void Draw_Rect(SDL_Surface*surf,SDL_Color *color,SDL_Rect*_rect,int border_width
 
   //4x2
   
-  points[0][0] = l;
-  points[0][1] = t;
+  points[0].x = l;
+  points[0].y = t;
 
-  points[1][0] = r;
-  points[1][1] = t;
+  points[1].x = r;
+  points[1].y = t;
 
-  points[2][0] = r;
-  points[2][1] = b;
+  points[2].x = r;
+  points[2].y = b;
 
-  points[3][0] = l;
-  points[3][1] = b;
+  points[3].x = l;
+  points[3].y = b;
 
-  Polygon(surf,color,points,4,border_width);
+  Polygon(surf,color,&points,4,border_width);
 
 }
 
@@ -162,10 +162,10 @@ void draw_fillpoly(SDL_Surface*surf, int*vx, int*vy, int numpoints, SDL_Color*co
 }
 
 
-SDL_Rect Polygon(SDL_Surface*surf, SDL_Color*color,int**points,int points_number, int border_width) {
+SDL_Rect Polygon(SDL_Surface*surf, SDL_Color*color,Point*points,int points_number, int border_width) {
   
   int bytes_per_pixel;
-  int *item;
+  Point *item;
   int *xlist,*ylist;
   int x,y;
   int left,right,top,bottom;
@@ -189,8 +189,8 @@ SDL_Rect Polygon(SDL_Surface*surf, SDL_Color*color,int**points,int points_number
   }
   
   item = &points[0];// assume length of item >=2
-  x = item[0];
-  y = item[1];
+  x = item->x;
+  y = item->y;
 
   left   = x;
 	right  = x;
@@ -205,8 +205,8 @@ SDL_Rect Polygon(SDL_Surface*surf, SDL_Color*color,int**points,int points_number
   
   for(loop=0;loop<points_number;loop++) {
     item = &points[loop];
-    x = item[0];
-    y = item[1];
+    x = item->x;
+    y = item->y;
     
     xlist[numpoints] = x;
     ylist[numpoints] = y;

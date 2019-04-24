@@ -50,14 +50,14 @@ static bool reject(int a,int b )  {
 }
 
 //length == pointlist length;
-SDL_Rect Lines(SDL_Surface *surf,SDL_Color *col,bool closed, int**pointlist,int length,int width) {
+SDL_Rect Lines(SDL_Surface *surf,SDL_Color *col,bool closed, Point*pointlist,int length,int width) {
   int x,y;
   int startx,starty,left,right;
   int top,bottom;
   int drawn;
   int loop;
   
-  int *item;
+  Point *item;
 
   if(length < 2) {
     panic("draw lines at least contains more than 1 points pair" );
@@ -65,9 +65,9 @@ SDL_Rect Lines(SDL_Surface *surf,SDL_Color *col,bool closed, int**pointlist,int 
   }
   
   int pts[4];
-
-  x = pointlist[0][0];
-  y = pointlist[0][1];
+  item = &pointlist[0];
+  x = item->x;
+  y = item->y;
   
   startx  = x;
   pts[0]  = x;
@@ -86,10 +86,10 @@ SDL_Rect Lines(SDL_Surface *surf,SDL_Color *col,bool closed, int**pointlist,int 
   drawn = 1;
   
   for(loop=1;loop < length;loop++) {
-    item = pointlist[loop];
+    item = &pointlist[loop];
     
-    x = item[0];
-    y = item[1];
+    x = item->x;
+    y = item->y;
     drawn +=1;
     pts[0] = startx;
     pts[1] = starty;
@@ -107,8 +107,8 @@ SDL_Rect Lines(SDL_Surface *surf,SDL_Color *col,bool closed, int**pointlist,int 
   
   if(closed==true && drawn > 2 ) {
     item = &pointlist[0];
-    x = item[0];
-    y = item[1];
+    x = item->x;
+    y = item->y;
     
 		pts[0] = startx;
 		pts[1] = starty;

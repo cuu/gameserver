@@ -14,8 +14,8 @@
 #define BOTTOM_EDGE 0x4
 #define TOP_EDGE    0x8
 
-SDL_Rect Lines(SDL_Surface *surf,SDL_Color *col,bool closed, int**pointlist,int length,int width);
 
+SDL_Rect Lines(SDL_Surface *surf,SDL_Color *col,bool closed, Point*pointlist,int length,int width);
 SDL_Rect Line(SDL_Surface*surf,SDL_Color*col,int x1,int y1,int x2,int y2,int width );
 
 

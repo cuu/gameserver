@@ -17,5 +17,9 @@ typedef struct {
 
 #define NONE -1
 
+typedef struct {
+  int x;
+  int y;
+}Point;
 
 #endif

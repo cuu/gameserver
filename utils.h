@@ -9,7 +9,8 @@
 #define MAX(a,b) ((a) > (b) ? a : b)
 #define MIN(a,b) ((a) < (b) ? a : b)
 
-
+int max(int a, int b);
+int min(int a, int b);
 
 char *ltrim(char *str, const char *seps);
 char *rtrim(char *str, const char *seps);
