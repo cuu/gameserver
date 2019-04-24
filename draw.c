@@ -3,6 +3,46 @@
 #include "line.h"
 #include "draw.h"
 
+bool PixelValue(SDL_Surface*surf,SDL_Color *c, int x,int y) {
+  unsigned char*pixels= NULL;
+  int bytes_per_pixel=0;
+  int addr;
+
+  pixels = (unsigned char*)surf->pixels;
+  
+  bytes_per_pixel = surf->format->BytesPerPixel;
+  addr = y*surf->pitch+x*bytes_per_pixel;
+  
+	if(x < surf->clip_rect.x || x >= surf->clip_rect.x + surf->clip_rect.w || y < surf->clip_rect.y || y >= surf->clip_rect.y + surf->clip_rect.h) {
+    printf("Pixels coord error\n");
+		return false;
+	}
+  
+  if (bytes_per_pixel == 1) {
+		pixels[addr] = c->r;
+	}
+
+  else if (bytes_per_pixel == 2) {
+		pixels[addr]   = c->r;
+    pixels[addr+1] = c->r;
+	} 
+  
+  else if (bytes_per_pixel == 3) {
+		pixels[addr]   = c->r;
+    pixels[addr+1] = c->r;
+    pixels[addr+2] = c->r;
+	}
+  
+  else if (bytes_per_pixel == 4) {
+		pixels[addr]   = c->r;
+    pixels[addr+1] = c->r;
+    pixels[addr+2] = c->r;
+    pixels[addr+3] = c->r;
+	}
+
+  return true;
+}
+
 bool Pixel(SDL_Surface*surf,SDL_Color *c, int x,int y) {
   unsigned char*pixels= NULL;
   int bytes_per_pixel=0;

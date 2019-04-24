@@ -15,6 +15,7 @@
 #include "utils.h"
 #include "pico8.h"
 #include "lisp_parser.h"
+#include "surface.h"
 
 #define STATE_DRAW 0
 #define STATE_RES 1

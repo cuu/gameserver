@@ -35,7 +35,7 @@ Pico8* NewPico8() {
   p->pal_colors[14] = (SDL_Color){255,119,168,255};
   p->pal_colors[15] = (SDL_Color){255,204,170,255};
   */
-
+  
   p->pal_colors[0]  = (SDL_Color){0,0,0,255};
   p->pal_colors[1]  = (SDL_Color){83,43,29,255};
   p->pal_colors[2]  = (SDL_Color){83,37,126,255};
@@ -52,15 +52,15 @@ Pico8* NewPico8() {
   p->pal_colors[13] = (SDL_Color){156,118,131,255};
   p->pal_colors[14] = (SDL_Color){168,119,255,255};
   p->pal_colors[15] = (SDL_Color){170,204,255,255};
-    
-  surface = SDL_CreateRGBSurface(0, p->Width, p->Height, 32,0,0,0,0);
+  
+  surface = NewSurfaceNoMask(p->Width, p->Height, 32);
   if (surface == NULL) {
         SDL_Log("SDL_CreateRGBSurface() failed: %s", SDL_GetError());
         exit(1);
   }
   p->DisplayCanvas = surface;
   
-  surface = SDL_CreateRGBSurface(0, p->Width, p->Height, 32,0,0,0,0);
+  surface = NewSurfaceNoMask(p->Width, p->Height, 32);
   if (surface == NULL) {
         SDL_Log("SDL_CreateRGBSurface() failed: %s", SDL_GetError());
         exit(1);
@@ -68,7 +68,7 @@ Pico8* NewPico8() {
 
   p->DrawCanvas = surface;
 
-  surface = SDL_CreateRGBSurface(0, p->Width, p->Height,32,0,0,0,0);
+  surface = NewSurfaceNoMask( p->Width, p->Height,32);
   if (surface == NULL) {
         SDL_Log("SDL_CreateRGBSurface() failed: %s", SDL_GetError());
         exit(1);
@@ -405,11 +405,25 @@ void Pico8_Spr(Pico8*self,LispCmd*lisp_cmd) {
     return;
   }
 
-  gfx_piece = SDL_CreateRGBSurface(0, _sw,_sh, 32,0,0,0,0);
+  gfx_piece = NewSurfaceNoMask( _sw,_sh, 32);
+  
   SDL_SetSurfacePalette(gfx_piece,self->Draw_Palette);
-  
-  SDL_SetColorKey(gfx_piece,SDL_TRUE,0);
-  
+  SDL_SetColorKey(gfx_piece,SDL_TRUE,SDL_MapRGB(gfx_piece->format,0,0,0));
+
+  Uint32 ColorKey;
+
+  SDL_Color tmp_col;
+
+  /*
+  for(i=0;i<16;i++) {
+    if(self->PalTransparent[i] == 0) {
+      ColorKey = SDL_MapRGB(self->DisplayCanvas->format,self->draw_colors[v].r,self->draw_colors[v].g,self->draw_colors[v].b);
+      if(SDL_SetColorKey(gfx_piece,SDL_TRUE,ColorKey) < 0 ) {
+        fprintf (stdout, "LoadSprite: Unable to set color key (0x%X), %s\n", ColorKey,SDL_GetError());
+      }
+    }
+  } 
+  */
 
   for(_x=0;_x<_sw;_x++)
     for(_y=0;_y<_sh;_y++)
@@ -417,10 +431,12 @@ void Pico8_Spr(Pico8*self,LispCmd*lisp_cmd) {
       addr = start_x+_x +(start_y+_y)*self->Width;
       v = self->Sprite[addr];
       //printf("spr %d %d ",addr,v);
-      if(v>0)
-        Pixel(gfx_piece,&self->draw_colors[v],_x,_y);
+      tmp_col = self->draw_colors[v];
+      if( self->PalTransparent[v] != 0 ) {
+        Pixel(gfx_piece,&tmp_col,_x,_y);
+      }
+
     }
-  
 
   xflip = false;
   yflip = false;
@@ -432,22 +448,28 @@ void Pico8_Spr(Pico8*self,LispCmd*lisp_cmd) {
   if(flip_y > 0 ) {
     yflip = true;
   }
-    
-  gfx_piece_new = Transform_Flip(gfx_piece,xflip,yflip);
   
-  for(i=0;i<16;i++) {
-    if(self->PalTransparent[i] == 0) {
-      SDL_SetColorKey(gfx_piece_new,SDL_TRUE,i);
+  if(xflip==true || yflip== true ) {
+    gfx_piece_new = Transform_Flip(gfx_piece,xflip,yflip);
+  
+    /*
+    for(i=0;i<16;i++) {
+      if(self->PalTransparent[i] == 0) {
+        SDL_SetColorKey(gfx_piece_new,SDL_TRUE,i);
+      }
     }
+    */
+    _r = (SDL_Rect){x,y,0,0};
+  
+    Surface_Blit(self->DrawCanvas,gfx_piece_new,&_r,NULL);
+    SDL_FreeSurface(gfx_piece_new);
+    SDL_FreeSurface(gfx_piece);
+  } else {
+
+    _r = (SDL_Rect){x,y,0,0};
+    Surface_Blit(self->DrawCanvas,gfx_piece,&_r,NULL);
+    SDL_FreeSurface(gfx_piece);
   }
-
-  _r = (SDL_Rect){x,y,0,0};
-  
-  Surface_Blit(self->DrawCanvas,gfx_piece_new,&_r,NULL);
-  
-  SDL_FreeSurface(gfx_piece);
-  SDL_FreeSurface(gfx_piece_new);
-
 
 }
 
@@ -613,17 +635,17 @@ void Pico8_Flip(Pico8*self,LispCmd*lisp_cmd) {
       }
       _blit_x = (window_w - bigger_border)/2;
       _blit_y = (window_h - bigger_border)/2;
-
+      
+      
       stretchRect.x = _blit_x;
       stretchRect.y = _blit_y;
       stretchRect.w = bigger_border;
       stretchRect.h = bigger_border;
-      
-      
+
       if( SDL_BlitScaled( self->DisplayCanvas, NULL, self->HWND, &stretchRect) != 0 ){
         printf("Scale blit error %s\n",SDL_GetError());
       }
-      
+
     }else {
       Surface_Blit(self->HWND,self->DisplayCanvas,&stretchRect,NULL);
     }

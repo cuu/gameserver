@@ -44,7 +44,9 @@ void GameThread_InitWindow(GameThread*self) {
 
     self->renderer = SDL_CreateRenderer(self->window, 0, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     
-    self->big_surface = SDL_CreateRGBSurface(0,self->Width, self->Height, 32,0,0,0,0);
+    self->big_surface = NewSurfaceNoMask(self->Width, self->Height, 32);
+
+
     if (self->big_surface == NULL) {
         SDL_Log("SDL_CreateRGBSurface() failed: %s", SDL_GetError());
         exit(1);
