@@ -13,8 +13,8 @@
 #define TCPBUFF 2048
 #define UDPBUFF 2048
 
-const char* remote_host = "127.0.0.1";
-const int remote_port  =8081;
+char* remote_host;
+const int remote_port  = 8081;
 
 
 mill_coroutine void start_tcp_client(GameThread*gs) {
@@ -87,9 +87,25 @@ mill_coroutine void start_udp_client(GameThread*gs) {
 
 
 int main(int argc,char*argv[]) {
-  
+  int opt;
   GameThread*gs=NULL;
   gs = NewGameThread();
+  
+  remote_host="127.0.0.1";
+
+  while((opt = getopt(argc, argv, "h:")) != -1)
+  {
+    switch(opt)  
+    {
+      case 'h':  
+        remote_host =  optarg;
+      break;  
+      case '?':  
+        printf("unknown option: %c\n", optopt); 
+        break;  
+    }  
+  }
+  
   
   mill_go(start_tcp_client(gs));
   mill_go(start_udp_client(gs));
