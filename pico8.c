@@ -841,6 +841,7 @@ void Pico8_set_palt(Pico8*self,int c,int t) {
         self->PalTransparent[i] = 1;
       }
     }
+    return;
   }
     
   c = c % 16;

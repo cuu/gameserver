@@ -41,7 +41,6 @@ typedef struct {
 
   SDL_Palette *DisplayPalette;
   SDL_Palette *Draw_Palette;
-  SDL_Palette *Guu_Palette;//segment fault point
 
   int PalTransparent[16];
   
