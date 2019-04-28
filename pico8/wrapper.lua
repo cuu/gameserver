@@ -109,11 +109,6 @@ function UDP_SendLoop()
 
 end
 
-
-UDP.connect()
-
-server.Network = UDP
-
 local TCP= {}
 
 local tcp = assert(socket.tcp())
@@ -144,9 +139,7 @@ function TCP.send(data)
 	return nil
 end
 
-TCP.connect()
 
-server.NetworkTCP = TCP
 
 log = print
 
@@ -502,6 +495,12 @@ if #arg > 1 then
       end
     end
   end
+
+UDP.connect()
+server.Network = UDP
+
+TCP.connect()
+server.NetworkTCP = TCP
 
   if #p8_file > 3 then
     main(p8_file)
