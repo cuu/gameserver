@@ -94,7 +94,8 @@ void Pico8_Print(Pico8*self,LispCmd*lisp_cmd);
 
 void Pico8_Rectfill(Pico8*self,LispCmd*lisp_cmd);
 void Pico8_Rect(Pico8*self,LispCmd*lisp_cmd);
-
+void Pico8_Circ(Pico8*self,LispCmd*lisp_cmd);
+void Pico8_Circfill(Pico8*self,LispCmd *lisp_cmd);
 
 void Pico8_Palt(Pico8*self,LispCmd*lisp_cmd);
 

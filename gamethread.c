@@ -16,7 +16,14 @@ GameThread*NewGameThread() {
   p->CurrentTime = 0;
   
   p->state = STATE_DRAW;
-  
+
+  if(TTF_Init()==-1) {
+    printf("TTF_Init: %s\n", TTF_GetError());
+    exit(2);
+  }
+
+  p->ThePico8 = NewPico8();
+
   return p;
 }
 
@@ -61,7 +68,6 @@ void GameThread_InitWindow(GameThread*self) {
     
     self->big_surface_pixels = self->big_surface->pixels;
     
-    self->ThePico8 = NewPico8();
     self->ThePico8->HWND = self->big_surface;
     
     self->Inited= true;
@@ -321,6 +327,7 @@ char* GameThread_ProcessLispCmds(GameThread*self,char*cmds) {
       self->state = STATE_DRAW;
       Pico8_ResOver(self->ThePico8,NULL);
     }else {
+      //printf("%s\n",cmds);
       Pico8_SetResource(self->ThePico8,cmds);
     }
   }

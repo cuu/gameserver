@@ -17,7 +17,7 @@ char* remote_host;
 const int remote_port  = 8081;
 
 
-mill_coroutine void start_tcp_client(GameThread*gs) {
+mill_coroutine void start_tcp_client(GameThread*gs,mill_chan input) {
   char buf[TCPBUFF]; // one frame 
 
   mill_ipaddr addr = mill_ipremote(remote_host, remote_port, 0, -1);
@@ -27,7 +27,9 @@ mill_coroutine void start_tcp_client(GameThread*gs) {
     printf("tcp connect failed,%s\n",strerror(errno));
     exit(-1);
   }
-  
+
+  mill_chs(input, int, 1);
+
   size_t nbytes;
   for(;;) {
     
@@ -53,7 +55,7 @@ mill_coroutine void start_tcp_client(GameThread*gs) {
 }
 
 
-mill_coroutine void start_udp_client(GameThread*gs) {
+mill_coroutine void start_udp_client(GameThread*gs,mill_chan input) {
 
   mill_ipaddr addr = mill_iplocal("0.0.0.0", 5555, 0);
   mill_udpsock s = mill_udplisten(addr);
@@ -68,7 +70,9 @@ mill_coroutine void start_udp_client(GameThread*gs) {
   
   gs->udpsock = s;
   gs->outaddr = outaddr;
-  
+
+  mill_chs(input, int, 1);
+
   for(;;) {
     sz = mill_udprecv(s, &inaddr, buf, sizeof(buf), -1);
     if(errno != 0) {
@@ -77,8 +81,11 @@ mill_coroutine void start_udp_client(GameThread*gs) {
       }
     }else {
       buf[sz-1]='\0';
-      GameThread_ProcessLispCmds(gs,buf);
-        
+      if(gs->state == STATE_DRAW) {
+        GameThread_ProcessLispCmds(gs,buf);
+      }else {
+        //memset(buf,0,sz);
+      }
     }
   }
 
@@ -90,7 +97,13 @@ int main(int argc,char*argv[]) {
   int opt;
   GameThread*gs=NULL;
   gs = NewGameThread();
-  
+
+  mill_chan ch = mill_chmake(int, 0);
+  mill_chan ch2 = mill_chmake(int,0);
+
+  int i,j;
+  i = 0;
+  j = 0;
   remote_host="127.0.0.1";
 
   while((opt = getopt(argc, argv, "h:")) != -1)
@@ -107,9 +120,24 @@ int main(int argc,char*argv[]) {
   }
   
   
-  mill_go(start_tcp_client(gs));
-  mill_go(start_udp_client(gs));
-  
+  mill_go(start_tcp_client(gs,ch));
+  mill_go(start_udp_client(gs,ch2));
+
+  for(;;) {
+    mill_choose {
+      mill_in(ch, int, val):
+        i = val;
+      mill_in(ch2,int,val):
+        j = val;
+    mill_end
+    }
+    if (i > 0 && j > 0) {
+      mill_chclose(ch);
+      mill_chclose(ch2);
+      break;
+    }
+  }
+
   GameThread_Run(gs);
   return 0;
 }
