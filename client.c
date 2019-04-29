@@ -48,6 +48,7 @@ mill_coroutine void start_tcp_client(GameThread*gs,mill_chan input) {
       //printf("tcp client received: %s $$\n",buf);
       
       GameThread_ProcessLispCmds(gs,buf);
+      
     }
     
     

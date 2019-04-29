@@ -34,6 +34,7 @@ local server = require("server")
 local api = require("libpico8")
 
 local remote_host = "127.0.0.1"
+local remote_port = 8080
 
 api.server = server 
 
@@ -41,7 +42,7 @@ local UDP = { data = {} ,curr_time = 0}
 local udp = assert(socket.udp())
 
 function UDP.connect()
-	assert(udp:setpeername(remote_host,8080))
+	assert(udp:setpeername(remote_host,remote_port))
 	udp:settimeout()
 	udp:send("(ping)\n")
 end
@@ -111,29 +112,12 @@ function UDP.cache(data)
   
 end
 
-function UDP_SendLoop()
-
-
-  local now
-
-  while true do
-	  now = time_ms()
-	  if now - UDP.curr_time >= 33 then
-	    UDP.send()
-	    UDP.curr_time = now
-	  end
-
-	  sched:suspend(udp)
-  end
-
-end
-
-local TCP= {}
+local TCP= {data = {},curr_time = 0}
 
 local tcp = assert(socket.tcp())
 
 function TCP.connect()
-  local host, port = remote_host, 8080
+  local host, port = remote_host, remote_port
   tcp:connect(host, port);
   tcp:settimeout(5)
 end
@@ -159,6 +143,30 @@ function TCP.send(data)
 end
 
 
+function TCP.send_all() -- must inside lua's coroutine
+  local ret,msg
+  local content = ''
+  
+  -- print("safe_tcp_send data is " ,data ,#data)
+  if #TCP.data == 0 then 
+    print("TCP.send_all data is zero",TCP.data)
+    return nil
+  end
+  
+
+  content = table.concat(TCP.data,"|")
+  ret,msg = tcp:send(content.."\n")
+  
+  TCP.data = {}
+  
+  return nil
+end
+
+function TCP.cache(data)
+  --print(data)
+  TCP.data[#TCP.data+1] = data
+  
+end
 
 log = print
 
@@ -406,9 +414,13 @@ function api.run()
 end
 
 function api.flip_network()
-
-  UDP.send_all()
-
+  
+  if api.server ~= nil then
+    if api.server.Network~=nil then
+      api.server.Network.send_all()
+    end
+  end
+  
 end
 
 function RunLoop(file)
@@ -516,9 +528,10 @@ if #arg > 1 then
   end
 
 UDP.connect()
-server.Network = UDP
 
 TCP.connect()
+
+server.Network = TCP
 server.NetworkTCP = TCP
 
   if #p8_file > 3 then
