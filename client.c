@@ -83,7 +83,8 @@ mill_coroutine void start_udp_client(GameThread*gs,mill_chan input) {
     }else {
       buf[sz-1]='\0';
       if(gs->state == STATE_DRAW) {
-        GameThread_ProcessLispCmds(gs,buf);
+        //GameThread_ProcessLispCmds(gs,buf);
+        GameThread_ProcessLispPackage(gs,buf);
       }else {
         //memset(buf,0,sz);
       }

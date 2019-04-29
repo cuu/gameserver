@@ -38,13 +38,54 @@ local remote_port = 8080
 
 api.server = server 
 
-local UDP = { data = {} ,curr_time = 0}
+local UDP = { data = {} ,curr_time = 0,order=0}
 local udp = assert(socket.udp())
 
 function UDP.connect()
 	assert(udp:setpeername(remote_host,remote_port))
 	udp:settimeout()
 	udp:send("(ping)\n")
+end
+
+
+function UDP.order_send() -- must inside lua's coroutine, send with package order
+  local ret,msg
+  local content = ''
+  
+  -- print("safe_tcp_send data is " ,data ,#data)
+  if #UDP.data == 0 then 
+    print("UDP.send data is zero",UDP.data)
+    return nil
+  end
+
+  local piece = {}
+  local divid = 3
+  if #UDP.data % 3 == 0 then 
+    divid = 3
+  end
+  
+  if #UDP.data % 4 == 0 then 
+    divid = 4
+  end  
+  
+  for i=1,#UDP.data,divid do 
+    
+    for j=1,divid do
+      if UDP.data[i+j-1] ~= nil then 
+        piece[j] = UDP.data[i+j-1]
+      end
+    end
+    
+    content = table.concat(piece,"|")
+    package = '(pack '..tostring(UDP.order)..'" '..content..'" )'
+    ret,msg = udp:send(package.."\n")
+    UDP.order = UDP.order+1
+  end
+  
+ 
+  UDP.data = {}
+  
+  return nil
 end
 
 function UDP.send() -- must inside lua's coroutine
@@ -417,7 +458,8 @@ function api.flip_network()
   
   if api.server ~= nil then
     if api.server.Network~=nil then
-      api.server.Network.send_all()
+      --api.server.Network.send_all()
+      api.server.Network.order_send()
     end
   end
   
@@ -531,7 +573,7 @@ UDP.connect()
 
 TCP.connect()
 
-server.Network = TCP
+server.Network = UDP
 server.NetworkTCP = TCP
 
   if #p8_file > 3 then

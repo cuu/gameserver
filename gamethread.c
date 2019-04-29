@@ -333,3 +333,14 @@ char* GameThread_ProcessLispCmds(GameThread*self,char*cmds) {
   }
   return "O";
 }
+
+char* GameThread_ProcessLispPackage(GameThread*self,char*cmds) {
+  LispCmd *lisp_cmd=NULL;
+
+  lisp_cmd = lisp_parser(cmd);
+  if(lisp_cmd != NULL) {
+    if(strcmp(lisp_cmd->Func,"pack") == 0) {
+      
+    }
+  }
+}
