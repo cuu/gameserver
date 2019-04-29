@@ -85,6 +85,25 @@ function UDP.send() -- must inside lua's coroutine
   return nil
 end
 
+function UDP.send_all() -- must inside lua's coroutine
+  local ret,msg
+  local content = ''
+  
+  -- print("safe_tcp_send data is " ,data ,#data)
+  if #UDP.data == 0 then 
+    print("UDP.send data is zero",UDP.data)
+    return nil
+  end
+  
+
+  content = table.concat(UDP.data,"|")
+  ret,msg = udp:send(content.."\n")
+  
+  UDP.data = {}
+  
+  return nil
+end
+
 function UDP.cache(data)
   --UDP.data = UDP.data..data.."\n"
   --print(data)
@@ -388,7 +407,7 @@ end
 
 function api.flip_network()
 
-  UDP.send()
+  UDP.send_all()
 
 end
 
