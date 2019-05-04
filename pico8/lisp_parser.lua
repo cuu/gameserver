@@ -83,7 +83,10 @@ function lisp.parser(lisp_str)
 	for i,v in ipairs(segs) do
 		if starts_with(v,'"') and ends_with(v,'"') then
 			segs[i] = segs[i]:sub(2,#segs[i]-1)
-		end
+		else
+      segs[i] = tonumber(segs[i])
+    end
+
 	end
 	LispCmd.Args = segs
 	
