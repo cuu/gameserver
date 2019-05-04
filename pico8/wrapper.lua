@@ -570,7 +570,6 @@ if #arg > 1 then
   end
 
 UDP.connect()
-
 TCP.connect()
 
 server.Network = UDP
