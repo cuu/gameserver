@@ -152,11 +152,11 @@ void  GameThread_SendBtn(GameThread*self,SDL_Event event) {
     
     //mill_udpsend(self->udpsock, self->outaddr, buffer,strlen(buffer));
     //printf("buffer %s\n",buffer);
-    if( now - self->last_keydown_time > (int)(1.0/self->ThePico8->FPS*2) ) 
+    //if( now - self->last_keydown_time > (int)(1.0/self->ThePico8->FPS*2) ) 
     {
       mill_tcpsend(self->tcpsock,buffer,strlen(buffer),-1);
       mill_tcpflush(self->tcpsock, -1);
-      self->last_keydown_time = now;
+      //self->last_keydown_time = now;
     }
   }
 }

@@ -10,8 +10,8 @@
 #include "types.h"
 #include "gamethread.h"
 
-#define TCPBUFF 2048
-#define UDPBUFF 2048
+#define TCPBUFF 8192
+#define UDPBUFF 8192
 
 char* remote_host;
 const int remote_port  = 8081;

@@ -318,6 +318,11 @@ function new_sandbox()
    }
 end
 
+function clear_keymap(keymap)
+  for i,v in ipairs(keymap[0]) do
+    keymap[0][i][1] = -1
+  end
+end
 
 function set_keymap(data,keymap)
 
