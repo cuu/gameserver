@@ -23,7 +23,8 @@ GameThread*NewGameThread() {
   }
 
   p->ThePico8 = NewPico8();
-
+  
+  p->last_keydown_time = 0;
   return p;
 }
 
@@ -90,6 +91,8 @@ void  GameThread_SendBtn(GameThread*self,SDL_Event event) {
   char*down="Down";
   char*up = "Up";
   char *p=NULL;
+  int now = 0;
+
   memset(buffer,0,32);
 
   if (event.type == SDL_KEYDOWN) {
@@ -145,7 +148,16 @@ void  GameThread_SendBtn(GameThread*self,SDL_Event event) {
   }
 
   if(strlen(buffer) > 2) {
-    mill_udpsend(self->udpsock, self->outaddr, buffer,strlen(buffer));
+    now = SDL_GetTicks();
+    
+    //mill_udpsend(self->udpsock, self->outaddr, buffer,strlen(buffer));
+    //printf("buffer %s\n",buffer);
+    if( now - self->last_keydown_time > (int)(1.0/self->ThePico8->FPS*2) ) 
+    {
+      mill_tcpsend(self->tcpsock,buffer,strlen(buffer),-1);
+      mill_tcpflush(self->tcpsock, -1);
+      self->last_keydown_time = now;
+    }
   }
 }
 
@@ -337,7 +349,7 @@ char* GameThread_ProcessLispCmds(GameThread*self,char*cmds) {
 char* GameThread_ProcessLispPackage(GameThread*self,char*cmds) {
   LispCmd *lisp_cmd=NULL;
 
-  lisp_cmd = lisp_parser(cmd);
+  lisp_cmd = lisp_parser(cmds);
   if(lisp_cmd != NULL) {
     if(strcmp(lisp_cmd->Func,"pack") == 0) {
       

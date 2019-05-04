@@ -327,11 +327,12 @@ function set_keymap(data,keymap)
 	local pos
   
   pos = data:find(",")
+
   if pos ~= nil then
     key = data:sub(0,pos-1)
-    action = data:sub(pos+1,#data-1)
+    action = data:sub(pos+1,#data)
   end
-  
+
   for i,v in ipairs(keymap[0]) do
 		if v[0] == key then
 			if action == "Down" then
@@ -349,12 +350,12 @@ function set_keymap(data,keymap)
 end
 
 
-function GetBtnLoop()
+function GetBtnLoopUdp()
   local count = 0 
   local framerate = 1/api.pico8.fps
   udp:send("(ping)\n")
+  udp:settimeout( framerate )
   while true do
-    udp:settimeout( framerate )
     local s, status = udp:receive()
     if s ~= nil then
       --count = count + string.len(s)
@@ -371,7 +372,29 @@ function GetBtnLoop()
     end
   end
 end
-	
+
+function GetBtnLoopTcp()
+  local count = 0 
+  local framerate = 1/api.pico8.fps
+  tcp:settimeout( framerate )
+  while true do
+    local s, status = tcp:receive("*l")
+    if s ~= nil then
+      --count = count + string.len(s)
+      --print("received: ",s)
+      set_keymap(s,__keymap)
+    end
+				
+    if status == "timeout" then
+      sched:suspend(tcp)
+    end
+    if status == "closed" then
+      print("tcp closed....")
+      break
+    end
+  end
+end
+
 function draw(cart)
 
   local frames = 0
@@ -458,8 +481,8 @@ function api.flip_network()
   
   if api.server ~= nil then
     if api.server.Network~=nil then
-      --api.server.Network.send_all()
-      api.server.Network.order_send()
+      api.server.Network.send_all()
+      --api.server.Network.order_send()
     end
   end
   
@@ -499,7 +522,7 @@ function main(file)
 
   sched:spawn(RunLoop,file)
   
-  sched:spawn(GetBtnLoop)
+  sched:spawn(GetBtnLoopTcp)
   --sched:spawn(UDP_SendLoop)
 
   while true do
@@ -572,7 +595,7 @@ if #arg > 1 then
 UDP.connect()
 TCP.connect()
 
-server.Network = UDP
+server.Network = TCP
 server.NetworkTCP = TCP
 
   if #p8_file > 3 then

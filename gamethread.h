@@ -38,13 +38,16 @@ typedef struct {
   int Frames;
   int CurrentTime;
   int PrevTime;
-  
+
   int KeyLog[8];
   int state;
  
   mill_udpsock udpsock;
   mill_ipaddr outaddr;
   
+  mill_tcpsock tcpsock;
+  int last_keydown_time;
+
 }GameThread;
 
 
