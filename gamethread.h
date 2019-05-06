@@ -21,6 +21,12 @@
 #define STATE_RES 1
 
 typedef struct {
+  char cmd[32];
+  int frame;
+  char data[UDPBUFF];
+}IRCPackage;
+
+typedef struct {
 
   int Width;
   int Height;
@@ -47,6 +53,10 @@ typedef struct {
   
   mill_tcpsock tcpsock;
   int last_keydown_time;
+  
+  //IRCPackage UdpDataTrash[16];
+  //int  UdpDataTrashNumber;
+  int LastUDP_PackNumber;
 
 }GameThread;
 

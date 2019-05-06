@@ -25,6 +25,10 @@ GameThread*NewGameThread() {
   p->ThePico8 = NewPico8();
   
   p->last_keydown_time = 0;
+  //p->UdpDataTrashNumber = 0;
+  
+  p->LastUDP_PackNumber = 0;
+  
   return p;
 }
 
@@ -148,16 +152,19 @@ void  GameThread_SendBtn(GameThread*self,SDL_Event event) {
   }
 
   if(strlen(buffer) > 2) {
-    now = SDL_GetTicks();
+    //now = SDL_GetTicks();
     
-    //mill_udpsend(self->udpsock, self->outaddr, buffer,strlen(buffer));
+    mill_udpsend(self->udpsock, self->outaddr, buffer,strlen(buffer));
     //printf("buffer %s\n",buffer);
+
     //if( now - self->last_keydown_time > (int)(1.0/self->ThePico8->FPS*2) ) 
+    /*
     {
       mill_tcpsend(self->tcpsock,buffer,strlen(buffer),-1);
       mill_tcpflush(self->tcpsock, -1);
       //self->last_keydown_time = now;
     }
+    */
   }
 }
 
@@ -325,6 +332,8 @@ char* GameThread_ProcessLispCmds(GameThread*self,char*cmds) {
   if(self->state == STATE_DRAW) {
 
     tmp = trim(cmds,"\n");
+    tmp = trim(tmp,"\r\n");
+    
     pch = strtok(tmp,"|");
     while (pch != NULL)
     {
@@ -346,13 +355,45 @@ char* GameThread_ProcessLispCmds(GameThread*self,char*cmds) {
   return "O";
 }
 
-char* GameThread_ProcessLispPackage(GameThread*self,char*cmds) {
-  LispCmd *lisp_cmd=NULL;
+char* GameThread_ProcessIRCPackageUDP(GameThread*self,char*udp_buff) {
+/*
+ * /pack 172971 (rectfill 1 2 3 4 27)|(rectfill 1 2 3 4 95)|(rectfill 1 2 3 4 35)
+ * /pack 172970 (rectfill 1 2 3 4 1)|(rectfill 1 2 3 4 49)|(rectfill 1 2 3 4 53)
+ * 
+*/
+  //skip the packages arrived late
 
-  lisp_cmd = lisp_parser(cmds);
-  if(lisp_cmd != NULL) {
-    if(strcmp(lisp_cmd->Func,"pack") == 0) {
-      
+  int start_pos;
+  int end_pos;
+  char*p;
+  char*data;
+  char frame[64];
+  long int frame_number;
+  int n;
+  start_pos  = strpos(udp_buff,"/",0);
+  end_pos    = strpos(udp_buff,"\r\n",0);
+
+  if(start_pos != -1 && end_pos !=-1 && end_pos > start_pos) {
+    start_pos = strpos(udp_buff," ",0);
+
+    if(start_pos != -1) {
+      start_pos+=1;
+      end_pos = strpos(udp_buff," ",start_pos);
+      if(end_pos!= -1) {
+        n = end_pos- start_pos;
+        if( n < 64 ) {
+          strncpy(frame,udp_buff+start_pos,n);
+          frame[n]='\0';
+          data = udp_buff+end_pos+1;
+          printf("%s%s %d\n",data,frame,strlen(frame));
+          frame_number = strtol(frame,NULL,10);
+          if(frame_number > self->LastUDP_PackNumber) {
+            GameThread_ProcessLispCmds(self,data);
+            self->LastUDP_PackNumber = frame_number;
+          }
+        }
+      }
     }
   }
+ 
 }

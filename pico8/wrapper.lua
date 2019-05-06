@@ -77,7 +77,7 @@ function UDP.order_send() -- must inside lua's coroutine, send with package orde
     end
     
     content = table.concat(piece,"|")
-    package = '(pack '..tostring(UDP.order)..'" '..content..'" )'
+    package = "/pack "..tostring(UDP.order).." "..content.."\r\n"
     ret,msg = udp:send(package.."\n")
     UDP.order = UDP.order+1
   end
@@ -335,7 +335,7 @@ function set_keymap(data,keymap)
 
   if pos ~= nil then
     key = data:sub(0,pos-1)
-    action = data:sub(pos+1,#data)
+    action = data:sub(pos+1,#data-1)
   end
 
   for i,v in ipairs(keymap[0]) do
@@ -486,8 +486,8 @@ function api.flip_network()
   
   if api.server ~= nil then
     if api.server.Network~=nil then
-      api.server.Network.send_all()
-      --api.server.Network.order_send()
+      --api.server.Network.send_all()
+      api.server.Network.order_send()
     end
   end
   
@@ -527,7 +527,7 @@ function main(file)
 
   sched:spawn(RunLoop,file)
   
-  sched:spawn(GetBtnLoopTcp)
+  sched:spawn(GetBtnLoopUdp)
   --sched:spawn(UDP_SendLoop)
 
   while true do
@@ -600,7 +600,7 @@ if #arg > 1 then
 UDP.connect()
 TCP.connect()
 
-server.Network = TCP
+server.Network = UDP
 server.NetworkTCP = TCP
 
   if #p8_file > 3 then

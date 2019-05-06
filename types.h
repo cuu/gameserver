@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define TCPBUFF 8192
+#define UDPBUFF 8192
+
 typedef enum { false, true } bool;
 
 

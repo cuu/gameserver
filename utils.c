@@ -68,3 +68,15 @@ int min(int a, int b) {
     }
     return b;
 }
+
+int strpos(char *hay, char *needle, int offset)
+{
+  char haystack[strlen(hay)];
+  strncpy(haystack, hay+offset, strlen(hay)-offset);
+  char *p = strstr(haystack, needle);
+  if (p){
+    return p - haystack+offset;
+  }
+  return -1;
+}
+

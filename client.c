@@ -10,9 +10,6 @@
 #include "types.h"
 #include "gamethread.h"
 
-#define TCPBUFF 8192
-#define UDPBUFF 8192
-
 char* remote_host;
 const int remote_port  = 8081;
 
@@ -84,8 +81,8 @@ mill_coroutine void start_udp_client(GameThread*gs,mill_chan input) {
     }else {
       buf[sz-1]='\0';
       if(gs->state == STATE_DRAW) {
-        GameThread_ProcessLispCmds(gs,buf);
-        //GameThread_ProcessLispPackage(gs,buf);
+        //GameThread_ProcessLispCmds(gs,buf);
+        GameThread_ProcessIRCPackageUDP(gs,buf);
       }else {
         //memset(buf,0,sz);
       }

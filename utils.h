@@ -18,4 +18,6 @@ char *trim(char *str, const char *seps);
 
 void panic(const char*format,...);
 
+int strpos(char *hay, char *needle, int offset);
+
 #endif
