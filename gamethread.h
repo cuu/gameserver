@@ -17,6 +17,8 @@
 #include "lisp_parser.h"
 #include "surface.h"
 
+#include "ikcp.h"
+
 #define STATE_DRAW 0
 #define STATE_RES 1
 
@@ -57,6 +59,7 @@ typedef struct {
   //IRCPackage UdpDataTrash[16];
   //int  UdpDataTrashNumber;
   int LastUDP_PackNumber;
+  ikcpcb *kcp1;
 
 }GameThread;
 

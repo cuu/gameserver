@@ -29,6 +29,8 @@ GameThread*NewGameThread() {
   
   p->LastUDP_PackNumber = 0;
   
+  p->kcp1 = NULL;
+
   return p;
 }
 

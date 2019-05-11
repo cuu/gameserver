@@ -359,18 +359,19 @@ function GetBtnLoopUdp()
   local count = 0 
   local framerate = 1/api.pico8.fps
   udp:send("(ping)\n")
-  udp:settimeout( framerate )
+  udp:settimeout(0)
   while true do
-    local s, status = udp:receive()
+    local s, status = udp:receive(1024)
     if s ~= nil then
       --count = count + string.len(s)
       --print("received: ",s)
       set_keymap(s,__keymap)
     end
-				
+    
     if status == "timeout" then
       sched:suspend(udp)
     end
+    
     if status == "closed" then
       print("closed....")
       break

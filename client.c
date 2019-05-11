@@ -10,9 +10,13 @@
 #include "types.h"
 #include "gamethread.h"
 
+#include "ikcp.h"
+
 char* remote_host;
 const int remote_port  = 8081;
 
+
+void kcp_output(const char *buf, int len, ikcpcb *kcp, void *user);
 
 mill_coroutine void start_tcp_client(GameThread*gs,mill_chan input) {
   char buf[TCPBUFF]; // one frame 
@@ -91,13 +95,78 @@ mill_coroutine void start_udp_client(GameThread*gs,mill_chan input) {
 
 }
 
+mill_coroutine void start_kcp_client(GameThread*gs,mill_chan input) {
+
+  mill_ipaddr addr = mill_iplocal("0.0.0.0", 5555, 0);
+  mill_udpsock s = mill_udplisten(addr);
+
+  mill_ipaddr outaddr = mill_ipremote(remote_host, remote_port, 0, -1);
+
+  mill_udpsend(s, outaddr, "ping", 4);
+  
+  char buf[UDPBUFF];
+  char buf2[UDPBUFF];
+  int hr;
+
+  mill_ipaddr inaddr;
+  size_t sz;
+  
+  gs->udpsock = s;
+  gs->outaddr = outaddr;
+
+  gs->kcp1 = ikcp_create(2, (void*)gs);
+  gs->kcp1->output = kcp_output;
+  ikcp_wndsize(gs->kcp1, 128, 128);
+  ikcp_nodelay(gs->kcp1, 1, 10, 2, 1);
+
+
+  mill_chs(input, int, 1);
+
+  for(;;) {
+    sz = mill_udprecv(s, &inaddr, buf, sizeof(buf), -1);
+    if(errno != 0) {
+      if(errno == ENOBUFS) {
+        printf("buff overflow\n");
+      }
+    }else {
+      if(gs->kcp1 != NULL) {
+        ikcp_update(gs->kcp1, iclock());
+        ikcp_input(gs->kcp1, buf, sz);
+      
+        while(1) {
+          hr = ikcp_recv(gs->kcp1, buf2,UDPBUFF);
+          if(hr > 0 ) {
+            buf2[hr]='\0';
+            if(gs->state == STATE_DRAW) {
+              printf("%s\n",buf2);
+              //GameThread_ProcessLispCmds(gs,buf2);
+            }else {
+              //memset(buf2,0,hr);
+            }
+          }else if(hr < 0 ) {
+            break;
+          }
+        }
+      }
+    }
+  }
+
+}
+
+mill_coroutine void kcp_output(const char *buf, int len, ikcpcb *kcp, void *user) {
+  GameThread*gs = (GameThread*)user;
+  
+  
+  mill_udpsend(gs->udpsock, gs->outaddr, buf,len);
+  
+}
 
 
 int main(int argc,char*argv[]) {
   int opt;
   GameThread*gs=NULL;
   gs = NewGameThread();
-
+  
   mill_chan ch = mill_chmake(int, 0);
   mill_chan ch2 = mill_chmake(int,0);
 
@@ -118,10 +187,9 @@ int main(int argc,char*argv[]) {
         break;  
     }  
   }
-  
-  
+    
   mill_go(start_tcp_client(gs,ch));
-  mill_go(start_udp_client(gs,ch2));
+  mill_go(start_kcp_client(gs,ch2));
 
   for(;;) {
     mill_choose {

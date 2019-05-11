@@ -1,3 +1,9 @@
 [submodule "libmill"]
 	path = libmill
 	url = https://github.com/sustrik/libmill
+[submodule "kcp"]
+	path = kcp
+	url = https://github.com/skywind3000/kcp.git
+[submodule "lua-kcp"]
+	path = lua-kcp
+	url = https://github.com/cuu/lua-kcp.git

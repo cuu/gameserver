@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "ikcp.h"
+
 #define MAX(a,b) ((a) > (b) ? a : b)
 #define MIN(a,b) ((a) < (b) ? a : b)
 
@@ -19,5 +21,12 @@ char *trim(char *str, const char *seps);
 void panic(const char*format,...);
 
 int strpos(char *hay, char *needle, int offset);
+
+///KCP
+void itimeofday(long *sec, long *usec);
+IINT64 iclock64(void);
+IUINT32 iclock();
+void isleep(unsigned long millisecond);
+
 
 #endif
