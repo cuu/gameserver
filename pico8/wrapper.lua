@@ -1,3 +1,5 @@
+package.cpath=package.cpath..";../lua-kcp/lualib/?.so"
+
 require 'strict'
 
 local _player = {
@@ -29,12 +31,22 @@ function time_ms()
 end
 
 --local api = require 'libpico8_unix_socket'
+local LKcp = require "lkcp"
+local LUtil = require("lutil")
 
 local server = require("server")
 local api = require("libpico8")
 
 local remote_host = "127.0.0.1"
 local remote_port = 8080
+
+local kcp1 = LKcp.lkcp_create(2, function (buf)
+        udp_output(buf, "111")
+end)
+
+kcp1:lkcp_wndsize(128, 128)
+kcp1:lkcp_nodelay(1, 10, 2, 1)
+
 
 api.server = server 
 
@@ -43,10 +55,14 @@ local udp = assert(socket.udp())
 
 function UDP.connect()
 	assert(udp:setpeername(remote_host,remote_port))
-	udp:settimeout()
+	udp:settimeout(0)
 	udp:send("(ping)\n")
 end
 
+function udp_output(buf, user)
+	--print("udp_output ",#buf)
+    udp:send(buf)
+end
 
 function UDP.order_send() -- must inside lua's coroutine, send with package order
   local ret,msg
@@ -145,6 +161,48 @@ function UDP.send_all() -- must inside lua's coroutine
   
   return nil
 end
+
+
+function UDP.kcp_send() 
+  local ret,msg
+  local content = ''
+  local current = LUtil.iclock()
+  -- print("safe_tcp_send data is " ,data ,#data)
+  if #UDP.data == 0 then 
+    print("UDP.send data is zero",UDP.data)
+    return nil
+  end
+
+  kcp1:lkcp_update(current)
+
+  local piece = {}
+  local divid = 3
+  if #UDP.data % 3 == 0 then 
+    divid = 3
+  end
+  
+  if #UDP.data % 4 == 0 then 
+    divid = 4
+  end  
+  
+  for i=1,#UDP.data,divid do 
+    
+    for j=1,divid do
+      if UDP.data[i+j-1] ~= nil then 
+        piece[j] = UDP.data[i+j-1]
+      end
+    end
+    
+    content = table.concat(piece,"|")
+    ret,msg = kcp1:lkcp_send(content.."\n")
+
+  end
+  
+  UDP.data = {}
+
+  return nil
+end
+
 
 function UDP.cache(data)
   --UDP.data = UDP.data..data.."\n"
@@ -357,48 +415,37 @@ end
 
 function GetBtnLoopUdp()
   local count = 0 
-  local framerate = 1/api.pico8.fps
-  udp:send("(ping)\n")
-  udp:settimeout(0)
-  while true do
-    local s, status = udp:receive(1024)
-    if s ~= nil then
-      --count = count + string.len(s)
-      --print("received: ",s)
-      set_keymap(s,__keymap)
-    end
-    
-    if status == "timeout" then
-      sched:suspend(udp)
-    end
-    
-    if status == "closed" then
-      print("closed....")
-      break
-    end
-  end
-end
+  local hrlen,hr
 
-function GetBtnLoopTcp()
-  local count = 0 
-  local framerate = 1/api.pico8.fps
-  tcp:settimeout( framerate )
-  while true do
-    local s, status = tcp:receive("*l")
-    if s ~= nil then
-      --count = count + string.len(s)
-      --print("received: ",s)
-      set_keymap(s,__keymap)
+  while true do 
+    while true do
+      local s, status = udp:receive(1024)
+      if s ~= nil then
+        kcp1:lkcp_input(s)
+        --set_keymap(s,__keymap)
+      end
+      if status == "timeout" then
+        break
+      end
+    
+      if status == "closed" then
+        print("closed....")
+        break
+      end
     end
-				
-    if status == "timeout" then
-      sched:suspend(tcp)
+  
+    while true do
+      hrlen, hr = kcp1:lkcp_recv()
+      if hrlen <= 0 then
+        break
+      end
+      set_keymap(hr,__keymap)
     end
-    if status == "closed" then
-      print("tcp closed....")
-      break
-    end
+  
+    sched:suspend(udp)
+
   end
+  
 end
 
 function draw(cart)
@@ -487,8 +534,8 @@ function api.flip_network()
   
   if api.server ~= nil then
     if api.server.Network~=nil then
-      --api.server.Network.send_all()
-      api.server.Network.order_send()
+      api.server.Network.kcp_send()
+      --api.server.Network.order_send()
     end
   end
   

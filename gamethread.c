@@ -156,7 +156,8 @@ void  GameThread_SendBtn(GameThread*self,SDL_Event event) {
   if(strlen(buffer) > 2) {
     //now = SDL_GetTicks();
     
-    mill_udpsend(self->udpsock, self->outaddr, buffer,strlen(buffer));
+    //mill_udpsend(self->udpsock, self->outaddr, buffer,strlen(buffer));
+    
     //printf("buffer %s\n",buffer);
 
     //if( now - self->last_keydown_time > (int)(1.0/self->ThePico8->FPS*2) ) 
@@ -167,6 +168,9 @@ void  GameThread_SendBtn(GameThread*self,SDL_Event event) {
       //self->last_keydown_time = now;
     }
     */
+    ikcp_update(self->kcp1, iclock());
+    ikcp_send(self->kcp1,buffer,strlen(buffer));
+
   }
 }
 

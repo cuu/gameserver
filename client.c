@@ -138,8 +138,8 @@ mill_coroutine void start_kcp_client(GameThread*gs,mill_chan input) {
           if(hr > 0 ) {
             buf2[hr]='\0';
             if(gs->state == STATE_DRAW) {
-              printf("%s\n",buf2);
-              //GameThread_ProcessLispCmds(gs,buf2);
+              //printf("%s\n",buf2);
+              GameThread_ProcessLispCmds(gs,buf2);
             }else {
               //memset(buf2,0,hr);
             }
