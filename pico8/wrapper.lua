@@ -44,9 +44,16 @@ local kcp1 = LKcp.lkcp_create(2, function (buf)
         udp_output1(buf, "111")
 end)
 
-
-kcp1:lkcp_wndsize(128, 128)
+kcp1:lkcp_wndsize(1024, 1024)
 kcp1:lkcp_nodelay(1, 10, 2, 1)
+
+
+local kcp2 = LKcp.lkcp_create(3, function (buf)
+        udp_output2(buf, "112")
+end)
+
+kcp2:lkcp_wndsize(512, 512)
+kcp2:lkcp_nodelay(1,10,2,1)
 
 
 api.server = server 
@@ -61,6 +68,11 @@ function UDP.connect()
 end
 
 function udp_output1(buf, user)
+	--print("udp_output ",#buf)
+    udp:send(buf)
+end
+
+function udp_output2(buf, user)
 	--print("udp_output ",#buf)
     udp:send(buf)
 end
@@ -419,14 +431,11 @@ function GetBtnLoopUdp()
   local hrlen,hr
 
   while true do 
-    
-    
-    
     while true do
       local s, status = udp:receive(1024)
       if s ~= nil then
-        kcp1:lkcp_input(s)
-        --set_keymap(s,__keymap)
+        kcp2:lkcp_input(s)
+				kcp1:lkcp_input(s)
       end
       if status == "timeout" then
         break
@@ -437,15 +446,21 @@ function GetBtnLoopUdp()
         break
       end
     end
-  
+
+		
+    local current = LUtil.iclock()
+	 
+		kcp2:lkcp_update(current)
+
     while true do
-      hrlen, hr = kcp1:lkcp_recv()
+      hrlen, hr = kcp2:lkcp_recv()
       if hrlen <= 0 then
         break
       end
       set_keymap(hr,__keymap)
     end
-  
+    
+
     sched:suspend(udp)
 
   end
