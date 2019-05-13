@@ -16,7 +16,8 @@ char* remote_host;
 const int remote_port  = 8081;
 
 
-void kcp_output(const char *buf, int len, ikcpcb *kcp, void *user);
+void kcp_output1(const char *buf, int len, ikcpcb *kcp, void *user);
+void kcp_output2(const char *buf, int len, ikcpcb *kcp, void *user);
 
 mill_coroutine void start_tcp_client(GameThread*gs,mill_chan input) {
   char buf[TCPBUFF]; // one frame 
@@ -115,11 +116,18 @@ mill_coroutine void start_kcp_client(GameThread*gs,mill_chan input) {
   gs->outaddr = outaddr;
 
   gs->kcp1 = ikcp_create(2, (void*)gs);
-  gs->kcp1->output = kcp_output;
-  ikcp_wndsize(gs->kcp1, 128, 128);
+  gs->kcp1->output = kcp_output1;
+  ikcp_wndsize(gs->kcp1, 1024, 1024);
   ikcp_nodelay(gs->kcp1, 1, 10, 2, 1);
 
-
+  
+  gs->kcp2 = ikcp_create(3, (void*)gs);
+  gs->kcp2->output = kcp_output2;
+  
+  ikcp_wndsize(gs->kcp2, 512, 512);
+  ikcp_nodelay(gs->kcp2, 1, 10, 2, 1);
+  
+  
   mill_chs(input, int, 1);
 
   for(;;) {
@@ -132,7 +140,8 @@ mill_coroutine void start_kcp_client(GameThread*gs,mill_chan input) {
       if(gs->kcp1 != NULL) {
         ikcp_update(gs->kcp1, iclock());
         ikcp_input(gs->kcp1, buf, sz);
-      
+        ikcp_input(gs->kcp2, buf, sz);
+        
         while(1) {
           hr = ikcp_recv(gs->kcp1, buf2,UDPBUFF);
           if(hr > 0 ) {
@@ -153,7 +162,7 @@ mill_coroutine void start_kcp_client(GameThread*gs,mill_chan input) {
 
 }
 
-mill_coroutine void kcp_output(const char *buf, int len, ikcpcb *kcp, void *user) {
+mill_coroutine void kcp_output1(const char *buf, int len, ikcpcb *kcp, void *user) {
   GameThread*gs = (GameThread*)user;
   
   
@@ -161,6 +170,13 @@ mill_coroutine void kcp_output(const char *buf, int len, ikcpcb *kcp, void *user
   
 }
 
+mill_coroutine void kcp_output2(const char *buf, int len, ikcpcb *kcp, void *user) {
+  GameThread*gs = (GameThread*)user;
+  
+  
+  mill_udpsend(gs->udpsock, gs->outaddr, buf,len);
+  
+}
 
 int main(int argc,char*argv[]) {
   int opt;

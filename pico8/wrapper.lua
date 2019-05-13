@@ -41,8 +41,9 @@ local remote_host = "127.0.0.1"
 local remote_port = 8080
 
 local kcp1 = LKcp.lkcp_create(2, function (buf)
-        udp_output(buf, "111")
+        udp_output1(buf, "111")
 end)
+
 
 kcp1:lkcp_wndsize(128, 128)
 kcp1:lkcp_nodelay(1, 10, 2, 1)
@@ -59,7 +60,7 @@ function UDP.connect()
 	udp:send("(ping)\n")
 end
 
-function udp_output(buf, user)
+function udp_output1(buf, user)
 	--print("udp_output ",#buf)
     udp:send(buf)
 end
@@ -418,6 +419,9 @@ function GetBtnLoopUdp()
   local hrlen,hr
 
   while true do 
+    
+    
+    
     while true do
       local s, status = udp:receive(1024)
       if s ~= nil then

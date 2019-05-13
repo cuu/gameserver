@@ -60,6 +60,7 @@ typedef struct {
   //int  UdpDataTrashNumber;
   int LastUDP_PackNumber;
   ikcpcb *kcp1;
+  ikcpcb *kcp2;
 
 }GameThread;
 
