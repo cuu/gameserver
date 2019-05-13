@@ -403,18 +403,19 @@ function set_keymap(data,keymap)
 	local pos
   
   pos = data:find(",")
-
+  --print(data)
   if pos ~= nil then
     key = data:sub(0,pos-1)
     action = data:sub(pos+1,#data-1)
   end
-
+  
+  
   for i,v in ipairs(keymap[0]) do
 		if v[0] == key then
 			if action == "Down" then
 				keymap[0][i][1] = 1
-			end
-			if action == "Up" then
+    
+			elseif action == "Up" then
 				keymap[0][i][1] = -1
 			end
       break
@@ -431,11 +432,13 @@ function GetBtnLoopUdp()
   local hrlen,hr
 
   while true do 
+    local current = LUtil.iclock()
+    kcp2:lkcp_update(current)
     while true do
       local s, status = udp:receive(1024)
       if s ~= nil then
         kcp2:lkcp_input(s)
-				kcp1:lkcp_input(s)
+        kcp1:lkcp_input(s)
       end
       if status == "timeout" then
         break
@@ -447,14 +450,9 @@ function GetBtnLoopUdp()
       end
     end
 
-		
-    local current = LUtil.iclock()
-	 
-		kcp2:lkcp_update(current)
-
     while true do
       hrlen, hr = kcp2:lkcp_recv()
-      if hrlen <= 0 then
+      if hrlen < 0 then
         break
       end
       set_keymap(hr,__keymap)
@@ -470,7 +468,7 @@ end
 function draw(cart)
 
   local frames = 0
-  local frame_time = 1/api.pico8.fps
+  local frame_time = 1/30.0
   local prev_time = 0
   local curr_time = 0
   local skip = 0  
@@ -488,14 +486,15 @@ function draw(cart)
     if cart._draw   then cart._draw() end
 
       curr_time = time_ms()
-
       if curr_time - prev_time < frame_time_ms then
-	sleep(frame_time)
+        sleep(frame_time)
+       --sched:suspend(udp)
+      else 
+        api.flip()
+        api.flip_network()
+        prev_time = curr_time
       end
-
-      api.flip()
-      api.flip_network()
-      prev_time = curr_time
+      
       sched:suspend(udp)
     end
 

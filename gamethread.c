@@ -153,7 +153,7 @@ void  GameThread_SendBtn(GameThread*self,SDL_Event event) {
     }
   }
 
-  if(strlen(buffer) > 2) {
+  if(strlen(buffer) > 1) {
     //now = SDL_GetTicks();
     
     //mill_udpsend(self->udpsock, self->outaddr, buffer,strlen(buffer));
@@ -168,6 +168,7 @@ void  GameThread_SendBtn(GameThread*self,SDL_Event event) {
       //self->last_keydown_time = now;
     }
     */
+    //printf("%s\n",buffer);
     ikcp_update(self->kcp2, iclock());
     ikcp_send(self->kcp2,buffer,strlen(buffer));
 
@@ -193,7 +194,9 @@ void GameThread_EventLoop(GameThread*self) {
           break;
         }
       }
-      GameThread_SendBtn(self,event);
+      if(event.type == SDL_KEYDOWN|| event.type == SDL_KEYUP) {
+        GameThread_SendBtn(self,event);
+      }
     }
     mill_msleep(mill_now()+ (int)((1/self->ThePico8->FPS)*1000.0)  );
   }

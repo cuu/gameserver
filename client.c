@@ -139,6 +139,8 @@ mill_coroutine void start_kcp_client(GameThread*gs,mill_chan input) {
     }else {
       if(gs->kcp1 != NULL) {
         ikcp_update(gs->kcp1, iclock());
+        ikcp_update(gs->kcp2, iclock());
+        
         ikcp_input(gs->kcp1, buf, sz);
         ikcp_input(gs->kcp2, buf, sz);
         

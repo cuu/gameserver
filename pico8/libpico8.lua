@@ -13,7 +13,7 @@ api.shr = bit.rshift
 
 local pico8 = {
   clip = nil, 
-  fps = 45.0,
+  fps = 60.0,
   screen = nil, 
   color = nil, 
   spriteflags = {},
