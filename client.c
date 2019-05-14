@@ -193,13 +193,16 @@ int main(int argc,char*argv[]) {
   j = 0;
   remote_host="127.0.0.1";
 
-  while((opt = getopt(argc, argv, "h:")) != -1)
+  while((opt = getopt(argc, argv, "h:i:n:p:e:")) != -1) // i==ID,n==Nick, p==Password,e==email
   {
     switch(opt)  
     {
       case 'h':  
         remote_host =  optarg;
       break;  
+      case 'i':
+        GameThread_User_GetID(gs,optarg);
+      break;
       case '?':  
         printf("unknown option: %c\n", optopt); 
         break;  

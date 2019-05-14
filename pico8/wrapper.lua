@@ -2,7 +2,40 @@ package.cpath=package.cpath..";../lua-kcp/lualib/?.so"
 
 require 'strict'
 
-local _player = {
+local _player1 = {
+    [1] = {[0]='Left',[1]=-1},
+    [2] = {[0]='Right',[1] = -1},
+    [3] = {[0]='Up', [1] = -1},
+    [4] = {[0]='Down',[1] = -1},
+    [5] = {[0]='U', [1] = -1 },
+    [6] = {[0]='I', [1] = -1 },
+    [7] = {[0]='Return',[1]=-1},
+    [8] = {[0]='Escape',[1]=-1},
+}
+
+local _player2 = {
+    [1] = {[0]='Left',[1]=-1},
+    [2] = {[0]='Right',[1] = -1},
+    [3] = {[0]='Up', [1] = -1},
+    [4] = {[0]='Down',[1] = -1},
+    [5] = {[0]='U', [1] = -1 },
+    [6] = {[0]='I', [1] = -1 },
+    [7] = {[0]='Return',[1]=-1},
+    [8] = {[0]='Escape',[1]=-1},
+}
+
+local _player3 = {
+    [1] = {[0]='Left',[1]=-1},
+    [2] = {[0]='Right',[1] = -1},
+    [3] = {[0]='Up', [1] = -1},
+    [4] = {[0]='Down',[1] = -1},
+    [5] = {[0]='U', [1] = -1 },
+    [6] = {[0]='I', [1] = -1 },
+    [7] = {[0]='Return',[1]=-1},
+    [8] = {[0]='Escape',[1]=-1},
+}
+
+local _player4 = {
     [1] = {[0]='Left',[1]=-1},
     [2] = {[0]='Right',[1] = -1},
     [3] = {[0]='Up', [1] = -1},
@@ -14,7 +47,10 @@ local _player = {
 }
 
 local __keymap = {
-	[0] = _player
+	[0] = _player1,
+  [1] = _player2,
+  [2] = _player3,
+  [3] = _player4
 }
 
 local coroutine_scheduler = require("coroutine_scheduler")
@@ -390,8 +426,10 @@ function new_sandbox()
 end
 
 function clear_keymap(keymap)
-  for i,v in ipairs(keymap[0]) do
-    keymap[0][i][1] = -1
+  for id=0,3 do
+    for i,v in ipairs(keymap[id]) do
+      keymap[id][i][1] = -1
+    end
   end
 end
 
@@ -401,22 +439,35 @@ function set_keymap(data,keymap)
 	local key 
 	local action
 	local pos
+  local pos2
+  local user_id
   
+  user_id = 0
+
   pos = data:find(",")
-  --print(data)
   if pos ~= nil then
-    key = data:sub(0,pos-1)
-    action = data:sub(pos+1,#data-1)
+    user_id = tonumber(data:sub(0,pos-1))
+    if user_id ~= nil then
+      pos2 = data:find(",",pos+1)
+      key = data:sub(pos+1,pos2-1)
+      action = data:sub(pos2+1,#data-1) -- #data-1 is for \n
+    else
+      return
+    end
   end
   
+  if user_id > 3 then
+    print("user id error")
+    return
+  end
   
   for i,v in ipairs(keymap[0]) do
 		if v[0] == key then
 			if action == "Down" then
-				keymap[0][i][1] = 1
+				keymap[user_id][i][1] = 1
     
 			elseif action == "Up" then
-				keymap[0][i][1] = -1
+				keymap[user_id][i][1] = -1
 			end
       break
 		end
@@ -505,7 +556,7 @@ function api.btn(i,p)
 	local ret
 	
 	if type(i) == 'number' then
-		i = i +1
+		i = i + 1
 		p = p or 0
 		if __keymap[p] and __keymap[p][i] then
 			ret =  __keymap[p][i][1]

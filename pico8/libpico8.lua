@@ -584,9 +584,7 @@ end
 function api.map(cel_x,cel_y,sx,sy,cel_w,cel_h,bitmask)
   cel_x = cel_x or 0
   cel_y = cel_y or 0
-	cel_w = cel_w or 0
-	cel_h = cel_h or 0	
-	
+
 	sx = sx or 0
 	sy = sy or 0
 
@@ -594,8 +592,8 @@ function api.map(cel_x,cel_y,sx,sy,cel_w,cel_h,bitmask)
   cel_y = api.flr(cel_y)
   sx = api.flr(sx)
   sy = api.flr(sy)
-  cel_w = api.flr(cel_w)
-  cel_h = api.flr(cel_h)
+  cel_w = api.flr(cel_w or 128)
+  cel_h = api.flr(cel_h or 64)
 
   bitmask = bitmask or 0
 

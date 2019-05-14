@@ -22,11 +22,24 @@
 #define STATE_DRAW 0
 #define STATE_RES 1
 
+#define PASSWORD 256
+#define EMAIL 1024 
+#define NICK 64
+
 typedef struct {
   char cmd[32];
   int frame;
   char data[UDPBUFF];
 }IRCPackage;
+
+typedef struct {
+  int ID;
+  char Nick[NICK];
+  char Password[PASSWORD];
+  char Email[EMAIL];
+
+}User;
+
 
 typedef struct {
 
@@ -59,6 +72,8 @@ typedef struct {
   //IRCPackage UdpDataTrash[16];
   //int  UdpDataTrashNumber;
   int LastUDP_PackNumber;
+  User* TheUser;
+  
   ikcpcb *kcp1;
   ikcpcb *kcp2;
 
@@ -82,6 +97,6 @@ void GameThread_Run(GameThread*self);
 char* GameThread_ProcessLispCmd(GameThread*self,char*cmd);
 char* GameThread_ProcessLispCmds(GameThread*self,char*cmds);
 
-
+void GameThread_User_GetID(GameThread*self,char*str );
 
 #endif

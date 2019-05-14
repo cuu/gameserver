@@ -30,7 +30,13 @@ GameThread*NewGameThread() {
   p->LastUDP_PackNumber = 0;
   
   p->kcp1 = NULL;
-
+  
+  p->TheUser = (User*)malloc(sizeof(User));
+  memset(p->TheUser->Nick,0,NICK);
+  memset(p->TheUser->Password,0,PASSWORD);
+  memset(p->TheUser->Email,0,EMAIL);
+  p->TheUser->ID=0;
+  
   return p;
 }
 
@@ -105,50 +111,56 @@ void  GameThread_SendBtn(GameThread*self,SDL_Event event) {
     p = down;
     switch(event.key.keysym.sym ) {
       case  SDLK_LEFT:
-        sprintf(buffer,"Left,%s\n",p);
+        sprintf(buffer,"%d,Left,%s\n",self->TheUser->ID,p);
         break;
       case SDLK_RIGHT:
-        sprintf(buffer,"Right,%s\n",p);
+        sprintf(buffer,"%d,Right,%s\n",self->TheUser->ID,p);
         break;
       case SDLK_UP:
-        sprintf(buffer,"Up,%s\n",p);
+        sprintf(buffer,"%d,Up,%s\n",self->TheUser->ID,p);
+        break;
+      case SDLK_DOWN:
+        sprintf(buffer,"%d,Down,%s\n",self->TheUser->ID,p);
         break;
       case SDLK_u:
-        sprintf(buffer,"U,%s\n",p);
+        sprintf(buffer,"%d,U,%s\n",self->TheUser->ID,p);
         break;
       case SDLK_i:
-        sprintf(buffer,"I,%s\n",p);
+        sprintf(buffer,"%d,I,%s\n",self->TheUser->ID,p);
         break;
       case SDLK_RETURN:
-        sprintf(buffer,"Return,%s\n",p);
+        sprintf(buffer,"%d,Return,%s\n",self->TheUser->ID,p);
         break;
       case SDLK_ESCAPE:
-        sprintf(buffer,"Escape,%s\n",p);
+        sprintf(buffer,"%d,Escape,%s\n",self->TheUser->ID,p);
         break;
     }
   }else if (event.type == SDL_KEYUP) {
     p = up;
     switch(event.key.keysym.sym ) {
       case  SDLK_LEFT:
-        sprintf(buffer,"Left,%s\n",p);
+        sprintf(buffer,"%d,Left,%s\n",self->TheUser->ID,p);
         break;
       case SDLK_RIGHT:
-        sprintf(buffer,"Right,%s\n",p);
+        sprintf(buffer,"%d,Right,%s\n",self->TheUser->ID,p);
         break;
       case SDLK_UP:
-        sprintf(buffer,"Up,%s\n",p);
+        sprintf(buffer,"%d,Up,%s\n",self->TheUser->ID,p);
+        break;
+      case SDLK_DOWN:
+        sprintf(buffer,"%d,Down,%s\n",self->TheUser->ID,p);
         break;
       case SDLK_u:
-        sprintf(buffer,"U,%s\n",p);
+        sprintf(buffer,"%d,U,%s\n",self->TheUser->ID,p);
         break;
       case SDLK_i:
-        sprintf(buffer,"I,%s\n",p);
+        sprintf(buffer,"%d,I,%s\n",self->TheUser->ID,p);
         break;
       case SDLK_RETURN:
-        sprintf(buffer,"Return,%s\n",p);
+        sprintf(buffer,"%d,Return,%s\n",self->TheUser->ID,p);
         break;
       case SDLK_ESCAPE:
-        sprintf(buffer,"Escape,%s\n",p);
+        sprintf(buffer,"%d,Escape,%s\n",self->TheUser->ID,p);
         break;
     }
   }
@@ -318,8 +330,10 @@ char* GameThread_ProcessLispCmd(GameThread*self,char*cmd) {
       Pico8_Circ(self->ThePico8,lisp_cmd);
     }else if(strcmp(lisp_cmd->Func,"circfill") == 0) {
       Pico8_Circfill(self->ThePico8,lisp_cmd);
+    }else if(strcmp(lisp_cmd->Func,"cls") == 0) {
+      Pico8_Cls(self->ThePico8,lisp_cmd);
     }
-    
+
     if(lisp_cmd->Args !=NULL) {
       free(lisp_cmd->Args);
     }
@@ -406,3 +420,13 @@ char* GameThread_ProcessIRCPackageUDP(GameThread*self,char*udp_buff) {
   }
  
 }
+
+void GameThread_User_GetID(GameThread*self,char*str ) {
+  
+  unsigned long id;
+  id = strtol(str,NULL,10);
+  
+  self->TheUser->ID=(int)id;
+  
+}
+
