@@ -107,60 +107,37 @@ void  GameThread_SendBtn(GameThread*self,SDL_Event event) {
 
   memset(buffer,0,32);
 
-  if (event.type == SDL_KEYDOWN) {
-    p = down;
-    switch(event.key.keysym.sym ) {
-      case  SDLK_LEFT:
-        sprintf(buffer,"%d,Left,%s\n",self->TheUser->ID,p);
-        break;
-      case SDLK_RIGHT:
-        sprintf(buffer,"%d,Right,%s\n",self->TheUser->ID,p);
-        break;
-      case SDLK_UP:
-        sprintf(buffer,"%d,Up,%s\n",self->TheUser->ID,p);
-        break;
-      case SDLK_DOWN:
-        sprintf(buffer,"%d,Down,%s\n",self->TheUser->ID,p);
-        break;
-      case SDLK_u:
-        sprintf(buffer,"%d,U,%s\n",self->TheUser->ID,p);
-        break;
-      case SDLK_i:
-        sprintf(buffer,"%d,I,%s\n",self->TheUser->ID,p);
-        break;
-      case SDLK_RETURN:
-        sprintf(buffer,"%d,Return,%s\n",self->TheUser->ID,p);
-        break;
-      case SDLK_ESCAPE:
-        sprintf(buffer,"%d,Escape,%s\n",self->TheUser->ID,p);
-        break;
+  if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP ) {
+    if( event.type == SDL_KEYDOWN ) {
+      p = down;
+    } else if (event.type == SDL_KEYUP) {
+      p = up;
     }
-  }else if (event.type == SDL_KEYUP) {
-    p = up;
+    
     switch(event.key.keysym.sym ) {
       case  SDLK_LEFT:
-        sprintf(buffer,"%d,Left,%s\n",self->TheUser->ID,p);
+        sprintf(buffer,"(btn %d %d \"%s\")\n",self->TheUser->ID,LEFT,p);
         break;
       case SDLK_RIGHT:
-        sprintf(buffer,"%d,Right,%s\n",self->TheUser->ID,p);
+        sprintf(buffer,"(btn %d %d \"%s\")\n",self->TheUser->ID,RIGHT,p);
         break;
       case SDLK_UP:
-        sprintf(buffer,"%d,Up,%s\n",self->TheUser->ID,p);
+        sprintf(buffer,"(btn %d %d \"%s\")\n",self->TheUser->ID,UP,p);
         break;
       case SDLK_DOWN:
-        sprintf(buffer,"%d,Down,%s\n",self->TheUser->ID,p);
+        sprintf(buffer,"(btn %d %d \"%s\")\n",self->TheUser->ID,DOWN,p);
         break;
       case SDLK_u:
-        sprintf(buffer,"%d,U,%s\n",self->TheUser->ID,p);
+        sprintf(buffer,"(btn %d %d \"%s\")\n",self->TheUser->ID,U,p);
         break;
       case SDLK_i:
-        sprintf(buffer,"%d,I,%s\n",self->TheUser->ID,p);
+        sprintf(buffer,"(btn %d %d \"%s\")\n",self->TheUser->ID,I,p);
         break;
       case SDLK_RETURN:
-        sprintf(buffer,"%d,Return,%s\n",self->TheUser->ID,p);
+        sprintf(buffer,"(btn %d %d \"%s\")\n",self->TheUser->ID,RETURN,p);
         break;
       case SDLK_ESCAPE:
-        sprintf(buffer,"%d,Escape,%s\n",self->TheUser->ID,p);
+        sprintf(buffer,"(btn %d %d \"%s\")\n",self->TheUser->ID,ESCAPE,p);
         break;
     }
   }

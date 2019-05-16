@@ -122,11 +122,11 @@ Pico8* NewPico8() {
   p->Cursor[1] = 0;
 
   // clear resource
-  p->Map = (char*)malloc(64*128*sizeof(char));
-  p->Sprite = (char*)malloc(128*128*sizeof(char));
+  p->Map         = (char*)malloc(64*128*sizeof(char));
+  p->Sprite      = (char*)malloc(128*128*sizeof(char));
   p->SpriteFlags = (char*)malloc(256*sizeof(char));
-  p->Sfx    = (char*)malloc(64*84*sizeof(char));
-  p->Music  = (char*)malloc(64*5*sizeof(char));
+  p->Sfx         = (char*)malloc(64*84*sizeof(char));
+  p->Music       = (char*)malloc(64*5*sizeof(char));
 
   memset(p->Map,0,64*128); //64*128=8192
   memset(p->Sprite,0,128*128);

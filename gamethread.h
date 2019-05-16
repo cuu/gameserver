@@ -26,6 +26,15 @@
 #define EMAIL 1024 
 #define NICK 64
 
+#define LEFT   1
+#define RIGHT  2
+#define UP     3
+#define DOWN   4
+#define U      5
+#define I      6
+#define RETURN 7
+#define ESCAPE 8
+
 typedef struct {
   char cmd[32];
   int frame;

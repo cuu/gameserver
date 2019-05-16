@@ -26,6 +26,11 @@ local pico8 = {
   camera_x = 0, 
   camera_y = 0, 
   frames = 0,
+  gfxdata = nil,
+  gffdata = nil,
+  mapdata = nil,
+  musicdata = nil,
+  sfxdata = nil
 }
 
 local RES = {
@@ -512,7 +517,13 @@ function api.load_p8_text(filename)
   api.server.send_resource(RES.MUSIC,musicdata)
 
   api.server.send_resource_done()
-
+  
+  api.pico8.gfxdata = gfxdata
+  api.pico8.gffdata = gffdata
+  api.pico8.sfxdata = sfxdata
+  api.pico8.mapdata = mapdata
+  api.pico8.musicdata = musicdata
+  
 end
 
 function api.spr(n,x,y,w,h,flip_x,flip_y)

@@ -2,48 +2,57 @@ package.cpath=package.cpath..";../lua-kcp/lualib/?.so"
 
 require 'strict'
 
+local LEFT  = 1
+local RIGHT = 2
+local UP    = 3
+local DOWN  = 4
+local U     = 5
+local I     = 6
+local RETURN= 7
+local ESCAPE= 8
+
 local _player1 = {
-    [1] = {[0]='Left',[1]=-1},
-    [2] = {[0]='Right',[1] = -1},
-    [3] = {[0]='Up', [1] = -1},
-    [4] = {[0]='Down',[1] = -1},
-    [5] = {[0]='U', [1] = -1 },
-    [6] = {[0]='I', [1] = -1 },
-    [7] = {[0]='Return',[1]=-1},
-    [8] = {[0]='Escape',[1]=-1},
+    [1] = {[0]=LEFT,  [1]=-1},
+    [2] = {[0]=RIGHT, [1] = -1},
+    [3] = {[0]=UP,    [1] = -1},
+    [4] = {[0]=DOWN,  [1] = -1},
+    [5] = {[0]=U,     [1] = -1},
+    [6] = {[0]=I,     [1] = -1},
+    [7] = {[0]=RETURN,[1]=-1},
+    [8] = {[0]=ESCAPE,[1]=-1},
 }
 
 local _player2 = {
-    [1] = {[0]='Left',[1]=-1},
-    [2] = {[0]='Right',[1] = -1},
-    [3] = {[0]='Up', [1] = -1},
-    [4] = {[0]='Down',[1] = -1},
-    [5] = {[0]='U', [1] = -1 },
-    [6] = {[0]='I', [1] = -1 },
-    [7] = {[0]='Return',[1]=-1},
-    [8] = {[0]='Escape',[1]=-1},
+    [1] = {[0]=LEFT,  [1]=-1},
+    [2] = {[0]=RIGHT, [1] = -1},
+    [3] = {[0]=UP,    [1] = -1},
+    [4] = {[0]=DOWN,  [1] = -1},
+    [5] = {[0]=U,     [1] = -1},
+    [6] = {[0]=I,     [1] = -1},
+    [7] = {[0]=RETURN,[1]=-1},
+    [8] = {[0]=ESCAPE,[1]=-1},
 }
 
 local _player3 = {
-    [1] = {[0]='Left',[1]=-1},
-    [2] = {[0]='Right',[1] = -1},
-    [3] = {[0]='Up', [1] = -1},
-    [4] = {[0]='Down',[1] = -1},
-    [5] = {[0]='U', [1] = -1 },
-    [6] = {[0]='I', [1] = -1 },
-    [7] = {[0]='Return',[1]=-1},
-    [8] = {[0]='Escape',[1]=-1},
+    [1] = {[0]=LEFT,  [1]=-1},
+    [2] = {[0]=RIGHT, [1] = -1},
+    [3] = {[0]=UP,    [1] = -1},
+    [4] = {[0]=DOWN,  [1] = -1},
+    [5] = {[0]=U,     [1] = -1},
+    [6] = {[0]=I,     [1] = -1},
+    [7] = {[0]=RETURN,[1]=-1},
+    [8] = {[0]=ESCAPE,[1]=-1},
 }
 
 local _player4 = {
-    [1] = {[0]='Left',[1]=-1},
-    [2] = {[0]='Right',[1] = -1},
-    [3] = {[0]='Up', [1] = -1},
-    [4] = {[0]='Down',[1] = -1},
-    [5] = {[0]='U', [1] = -1 },
-    [6] = {[0]='I', [1] = -1 },
-    [7] = {[0]='Return',[1]=-1},
-    [8] = {[0]='Escape',[1]=-1},
+    [1] = {[0]=LEFT,  [1]=-1},
+    [2] = {[0]=RIGHT, [1] = -1},
+    [3] = {[0]=UP,    [1] = -1},
+    [4] = {[0]=DOWN,  [1] = -1},
+    [5] = {[0]=U,     [1] = -1},
+    [6] = {[0]=I,     [1] = -1},
+    [7] = {[0]=RETURN,[1]=-1},
+    [8] = {[0]=ESCAPE,[1]=-1},
 }
 
 local __keymap = {
@@ -72,6 +81,7 @@ local LUtil = require("lutil")
 
 local server = require("server")
 local api = require("libpico8")
+local lisp = require("lisp_parser")
 
 local remote_host = "127.0.0.1"
 local remote_port = 8080
@@ -433,41 +443,21 @@ function clear_keymap(keymap)
   end
 end
 
-function set_keymap(data,keymap)
+function set_keymap(id,key,action)
 
 	local data_array
-	local key 
-	local action
 	local pos
   local pos2
   local user_id
   
-  user_id = 0
-
-  pos = data:find(",")
-  if pos ~= nil then
-    user_id = tonumber(data:sub(0,pos-1))
-    if user_id ~= nil then
-      pos2 = data:find(",",pos+1)
-      key = data:sub(pos+1,pos2-1)
-      action = data:sub(pos2+1,#data-1) -- #data-1 is for \n
-    else
-      return
-    end
-  end
-  
-  if user_id > 3 then
-    print("user id error")
-    return
-  end
-  
-  for i,v in ipairs(keymap[0]) do
+  user_id = id
+  for i,v in ipairs(__keymap[user_id]) do
 		if v[0] == key then
 			if action == "Down" then
-				keymap[user_id][i][1] = 1
+				__keymap[user_id][i][1] = 1
     
 			elseif action == "Up" then
-				keymap[user_id][i][1] = -1
+				__keymap[user_id][i][1] = -1
 			end
       break
 		end
@@ -506,7 +496,17 @@ function GetBtnLoopUdp()
       if hrlen < 0 then
         break
       end
-      set_keymap(hr,__keymap)
+      
+      local lisp_cmd = lisp.parser(hr)
+
+      if lisp_cmd ~= nil then 
+        
+        if lisp_cmd.Func == "btn" then
+          set_keymap(lisp_cmd.Args[1],lisp_cmd.Args[2],lisp_cmd.Args[3])
+        end
+        
+      end
+      
     end
     
 
@@ -632,8 +632,8 @@ function RunLoop(file)
     end
 
 		if cart._init then cart._init() end
-      
-		 draw(cart)
+    
+    draw(cart)
   end
 end
 

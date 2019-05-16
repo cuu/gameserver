@@ -39,6 +39,9 @@ function lisp.parser(lisp_str)
 			end
 
 			depth = depth -1
+      if depth == 0 then
+        break
+      end
 		end
 		
 		if depth > 0 then
@@ -82,13 +85,12 @@ function lisp.parser(lisp_str)
 
 	for i,v in ipairs(segs) do
 		if starts_with(v,'"') and ends_with(v,'"') then
-			segs[i] = segs[i]:sub(2,#segs[i]-1)
+			LispCmd.Args[i] = v:sub(2,#v-1)
 		else
-      segs[i] = tonumber(segs[i])
+      LispCmd.Args[i] = tonumber(v)
     end
 
 	end
-	LispCmd.Args = segs
 	
 	return LispCmd
 end
