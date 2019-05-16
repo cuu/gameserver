@@ -120,7 +120,8 @@ mill_coroutine void start_kcp_client(GameThread*gs,mill_chan input) {
   char buf[UDPBUFF];
   char buf2[UDPBUFF];
   int hr;
-
+  int conv;
+  
   mill_ipaddr inaddr;
   size_t sz;
   
@@ -129,16 +130,18 @@ mill_coroutine void start_kcp_client(GameThread*gs,mill_chan input) {
 
   gs->kcp1 = ikcp_create(2, (void*)gs);
   gs->kcp1->output = kcp_output1;
-  ikcp_wndsize(gs->kcp1, 1024, 1024);
+  ikcp_wndsize(gs->kcp1, 32, 32);
   ikcp_nodelay(gs->kcp1, 1, 10, 2, 1);
-
+  gs->kcp1->rx_minrto = 10;
+  gs->kcp1->fastresend = 1;
   
+  /*
   gs->kcp2 = ikcp_create(3, (void*)gs);
   gs->kcp2->output = kcp_output2;
   
   ikcp_wndsize(gs->kcp2, 512, 512);
   ikcp_nodelay(gs->kcp2, 1, 10, 2, 1);
-  
+  */
   
   mill_chs(input, int, 1);
 
@@ -150,12 +153,15 @@ mill_coroutine void start_kcp_client(GameThread*gs,mill_chan input) {
       }
     }else {
       if(gs->kcp1 != NULL) {
-        ikcp_update(gs->kcp1, iclock());
-        ikcp_update(gs->kcp2, iclock());
-        
-        ikcp_input(gs->kcp1, buf, sz);
-        ikcp_input(gs->kcp2, buf, sz);
-        
+        conv = ikcp_getconv(buf);
+        if(conv == 2 ) {
+          ikcp_input(gs->kcp1, buf, sz);
+          ikcp_update(gs->kcp1, iclock());
+        }else if(conv == 3) {
+          ikcp_update(gs->kcp2, iclock());
+          ikcp_input(gs->kcp2, buf, sz);
+        }
+
         while(1) {
           hr = ikcp_recv(gs->kcp1, buf2,UDPBUFF);
           if(hr > 0 ) {

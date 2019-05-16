@@ -158,9 +158,9 @@ void  GameThread_SendBtn(GameThread*self,SDL_Event event) {
     }
     */
     //printf("%s\n",buffer);
-    ikcp_update(self->kcp2, iclock());
-    ikcp_send(self->kcp2,buffer,strlen(buffer));
-
+    //ikcp_update(self->kcp1, iclock());
+    ikcp_send(self->kcp1,buffer,strlen(buffer));
+    ikcp_update(self->kcp1, iclock());
   }
 }
 

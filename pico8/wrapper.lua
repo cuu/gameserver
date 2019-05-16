@@ -85,12 +85,13 @@ local lisp = require("lisp_parser")
 
 local remote_host = "127.0.0.1"
 local remote_port = 8080
+local next= 0
 
 local kcp1 = LKcp.lkcp_create(2, function (buf)
         udp_output1(buf, "111")
 end)
 
-kcp1:lkcp_wndsize(1024, 1024)
+kcp1:lkcp_wndsize(32, 32)
 kcp1:lkcp_nodelay(1, 10, 2, 1)
 
 
@@ -100,6 +101,19 @@ end)
 
 kcp2:lkcp_wndsize(512, 512)
 kcp2:lkcp_nodelay(1,10,2,1)
+
+function check_kcp1()
+    local current = LUtil.iclock()
+    if next == 0 then
+      next = kcp1:lkcp_check(current)
+    end 
+
+    if next - current <= 0 then
+      kcp1:lkcp_update(current)
+      next = 0
+    end
+
+end
 
 
 api.server = server 
@@ -231,9 +245,7 @@ function UDP.kcp_send()
     print("UDP.send data is zero",UDP.data)
     return nil
   end
-
-  kcp1:lkcp_update(current)
-
+  
   local piece = {}
   local divid = 3
   if #UDP.data % 3 == 0 then 
@@ -254,7 +266,7 @@ function UDP.kcp_send()
     
     content = table.concat(piece,"|")
     ret,msg = kcp1:lkcp_send(content.."\n")
-
+    check_kcp1()
   end
   
   UDP.data = {}
@@ -467,19 +479,18 @@ function set_keymap(id,key,action)
 
 end
 
-
 function GetBtnLoopUdp()
   local count = 0 
   local hrlen,hr
 
   while true do 
-    local current = LUtil.iclock()
-    kcp2:lkcp_update(current)
+    --kcp2:lkcp_update(current)
     while true do
       local s, status = udp:receive(1024)
       if s ~= nil then
-        kcp2:lkcp_input(s)
+        --kcp2:lkcp_input(s)
         kcp1:lkcp_input(s)
+        check_kcp1()
       end
       if status == "timeout" then
         break
@@ -492,7 +503,7 @@ function GetBtnLoopUdp()
     end
 
     while true do
-      hrlen, hr = kcp2:lkcp_recv()
+      hrlen, hr = kcp1:lkcp_recv()
       if hrlen < 0 then
         break
       end
