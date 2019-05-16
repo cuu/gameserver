@@ -97,9 +97,21 @@ mill_coroutine void start_udp_client(GameThread*gs,mill_chan input) {
 }
 
 mill_coroutine void start_kcp_client(GameThread*gs,mill_chan input) {
+  int port;
+  port = 5555;
 
-  mill_ipaddr addr = mill_iplocal("0.0.0.0", 5555, 0);
+  mill_ipaddr addr = mill_iplocal("0.0.0.0", port, 0);
   mill_udpsock s = mill_udplisten(addr);
+  if(s == NULL) {
+    port +=1;
+    addr = mill_iplocal("0.0.0.0", port, 0);
+    s    = mill_udplisten(addr);
+    if(s == NULL) //still? no !
+    {
+      perror("udplisten");
+      exit(-1);
+    }
+  }
 
   mill_ipaddr outaddr = mill_ipremote(remote_host, remote_port, 0, -1);
 
