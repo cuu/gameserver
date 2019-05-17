@@ -87,34 +87,77 @@ local remote_host = "127.0.0.1"
 local remote_port = 8080
 local next= 0
 
-local kcp1 = LKcp.lkcp_create(2, function (buf)
-        udp_output1(buf, "111")
-end)
 
-kcp1:lkcp_wndsize(32, 32)
-kcp1:lkcp_nodelay(1, 10, 2, 1)
+local kcps = { allgui = {} }
 
-
-local kcp2 = LKcp.lkcp_create(3, function (buf)
-        udp_output2(buf, "112")
-end)
-
-kcp2:lkcp_wndsize(512, 512)
-kcp2:lkcp_nodelay(1,10,2,1)
-
-function check_kcp1()
+function check_kcp(kcp)
     local current = LUtil.iclock()
     if next == 0 then
-      next = kcp1:lkcp_check(current)
+      next = kcp:lkcp_check(current)
     end 
 
     if next - current <= 0 then
-      kcp1:lkcp_update(current)
+      kcp:lkcp_update(current)
       next = 0
     end
+end
+
+function kcps.new_gui(id)
+
+  kcps.allgui[id] = LKcp.lkcp_create(id, function (buf)
+        udp_output(buf, kcps)
+  end)
+
+  kcps.allgui[id]:lkcp_wndsize(128,128)
+  kcps.allgui[id]:lkcp_nodelay(1, 10, 2, 1)
 
 end
 
+function kcps.send(data)
+  local hr 
+  for i,v in ipairs(kcps.allgui) do
+    if v ~= nil then
+      v:lkcp_send(data)
+      check_kcp(v)
+    end
+  end
+end
+
+function kcps.input(data)
+  local hr 
+  for i,v in ipairs(kcps.allgui) do
+    if v ~= nil then
+      hr = v:lkcp_input(data)
+      if hr < 0 then
+        print("lkcp_input ",i, " failed")
+      else
+        check_kcp(v)
+      end
+    end
+  end
+end
+
+
+function kcps.receive()
+  local hr,hrlen
+
+  for i,v in ipairs(kcps.allgui) do
+    while v ~= nil do
+      
+      hrlen, hr = v:lkcp_recv()
+      if hrlen < 0 then
+        break
+      end
+
+      local lisp_cmd = lisp.parser(hr)
+      if lisp_cmd ~= nil then 
+        if lisp_cmd.Func == "btn" then
+          set_keymap(lisp_cmd.Args[1],lisp_cmd.Args[2],lisp_cmd.Args[3])
+        end
+      end
+    end
+  end
+end
 
 api.server = server 
 
@@ -127,12 +170,7 @@ function UDP.connect()
 	udp:send("(ping)\n")
 end
 
-function udp_output1(buf, user)
-	--print("udp_output ",#buf)
-    udp:send(buf)
-end
-
-function udp_output2(buf, user)
+function udp_output(buf, user)
 	--print("udp_output ",#buf)
     udp:send(buf)
 end
@@ -265,8 +303,8 @@ function UDP.kcp_send()
     end
     
     content = table.concat(piece,"|")
-    ret,msg = kcp1:lkcp_send(content.."\n")
-    check_kcp1()
+    ret,msg = kcps.send(content.."\n")
+
   end
   
   UDP.data = {}
@@ -484,13 +522,10 @@ function GetBtnLoopUdp()
   local hrlen,hr
 
   while true do 
-    --kcp2:lkcp_update(current)
     while true do
       local s, status = udp:receive(1024)
       if s ~= nil then
-        --kcp2:lkcp_input(s)
-        kcp1:lkcp_input(s)
-        check_kcp1()
+        kcps.input(s)
       end
       if status == "timeout" then
         break
@@ -501,25 +536,9 @@ function GetBtnLoopUdp()
         break
       end
     end
-
-    while true do
-      hrlen, hr = kcp1:lkcp_recv()
-      if hrlen < 0 then
-        break
-      end
-      
-      local lisp_cmd = lisp.parser(hr)
-
-      if lisp_cmd ~= nil then 
-        
-        if lisp_cmd.Func == "btn" then
-          set_keymap(lisp_cmd.Args[1],lisp_cmd.Args[2],lisp_cmd.Args[3])
-        end
-        
-      end
-      
-    end
     
+    
+    kcps.receive()
 
     sched:suspend(udp)
 
@@ -607,7 +626,9 @@ end
 
 
 function api.run()
-  
+  while true do
+    
+  end
 end
 
 function api.flip_network()
@@ -620,6 +641,23 @@ function api.flip_network()
   end
   
 end
+
+function api.send_resource_to_gui(gui_id)
+  print("send_resource_to_gui",gui_id)
+  api.server.send_pico8_version(api.pico8.version)
+  api.server.send_resource(api.RES.GFX,  api.pico8.gfxdata)
+  --api.server.send_resource(api.RES.GFF,  api.pico8.gffdata:sub(1,#api.pico8.gffdata-1))
+	api.server.send_resource(api.RES.GFF,  api.pico8.gffdata)
+  api.server.send_resource(api.RES.SFX,  api.pico8.sfxdata)
+  api.server.send_resource(api.RES.MAP,  api.pico8.mapdata)
+  api.server.send_resource(api.RES.MUSIC,api.pico8.musicdata)
+  api.server.send_resource_done()
+
+  
+  kcps.new_gui(gui_id)
+  
+end
+
 
 function RunLoop(file)
   
@@ -648,7 +686,35 @@ function RunLoop(file)
   end
 end
 
+function SendResLoop()
+  
+  tcp:settimeout(0)
 
+  while true do
+
+    local s, status, partial = tcp:receive()
+    --print(s or partial)
+    if s ~= nil then 
+      local lisp_cmd = lisp.parser(s)
+      if lisp_cmd ~= nil then 
+
+        if lisp_cmd.Func == "getres" then
+          api.send_resource_to_gui(lisp_cmd.Args[1])
+        end
+
+      end
+    end
+
+    if status == "closed" then
+      print("central server down")
+      break
+    end
+    
+    sched:suspend(tcp)
+
+  end
+
+end
 
 --------------------------------------------
 function main(file)
@@ -656,6 +722,8 @@ function main(file)
   sched:spawn(RunLoop,file)
   
   sched:spawn(GetBtnLoopUdp)
+  sched:spawn(SendResLoop)
+
   --sched:spawn(UDP_SendLoop)
 
   while true do

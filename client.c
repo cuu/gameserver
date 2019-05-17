@@ -15,12 +15,13 @@
 char* remote_host;
 const int remote_port  = 8081;
 
-
-void kcp_output1(const char *buf, int len, ikcpcb *kcp, void *user);
-void kcp_output2(const char *buf, int len, ikcpcb *kcp, void *user);
+mill_coroutine int kcp_output(const char *buf, int len, ikcpcb *kcp, void *user);
 
 mill_coroutine void start_tcp_client(GameThread*gs,mill_chan input) {
   char buf[TCPBUFF]; // one frame 
+  
+  char init_cmd[32];
+  memset(init_cmd,0,32);
 
   mill_ipaddr addr = mill_ipremote(remote_host, remote_port, 0, -1);
   mill_tcpsock s = mill_tcpconnect(addr, -1);
@@ -32,6 +33,15 @@ mill_coroutine void start_tcp_client(GameThread*gs,mill_chan input) {
 
   mill_chs(input, int, 1);
   gs->tcpsock = s;
+  
+  sprintf(init_cmd,"(getres %d)\n",gs->TheUser->ID);
+
+  mill_tcpsend(s, init_cmd, strlen(init_cmd), -1);
+  if(errno != 0 ) {perror("tcpsend");}
+  mill_tcpflush(s, -1);
+  if(errno != 0 ) {perror("tcpflush");}
+  
+  printf("send %s\n",init_cmd);
 
   size_t nbytes;
   for(;;) {
@@ -115,7 +125,7 @@ mill_coroutine void start_kcp_client(GameThread*gs,mill_chan input) {
 
   mill_ipaddr outaddr = mill_ipremote(remote_host, remote_port, 0, -1);
 
-  mill_udpsend(s, outaddr, "ping", 4);
+  mill_udpsend(s, outaddr, "(ping)", 4);
   
   char buf[UDPBUFF];
   char buf2[UDPBUFF];
@@ -128,20 +138,14 @@ mill_coroutine void start_kcp_client(GameThread*gs,mill_chan input) {
   gs->udpsock = s;
   gs->outaddr = outaddr;
 
-  gs->kcp1 = ikcp_create(2, (void*)gs);
-  gs->kcp1->output = kcp_output1;
-  ikcp_wndsize(gs->kcp1, 32, 32);
+  gs->kcp1 = ikcp_create(gs->TheUser->ID, (void*)gs);
+  gs->kcp1->output = kcp_output;
+  ikcp_wndsize(gs->kcp1, 128, 128);
   ikcp_nodelay(gs->kcp1, 1, 10, 2, 1);
+
   gs->kcp1->rx_minrto = 10;
   gs->kcp1->fastresend = 1;
   
-  /*
-  gs->kcp2 = ikcp_create(3, (void*)gs);
-  gs->kcp2->output = kcp_output2;
-  
-  ikcp_wndsize(gs->kcp2, 512, 512);
-  ikcp_nodelay(gs->kcp2, 1, 10, 2, 1);
-  */
   
   mill_chs(input, int, 1);
 
@@ -152,16 +156,10 @@ mill_coroutine void start_kcp_client(GameThread*gs,mill_chan input) {
         printf("buff overflow\n");
       }
     }else {
-      if(gs->kcp1 != NULL) {
-        conv = ikcp_getconv(buf);
-        if(conv == 2 ) {
-          ikcp_input(gs->kcp1, buf, sz);
-          ikcp_update(gs->kcp1, iclock());
-        }else if(conv == 3) {
-          ikcp_update(gs->kcp2, iclock());
-          ikcp_input(gs->kcp2, buf, sz);
-        }
-
+      conv = ikcp_getconv(buf);
+      if(conv == gs->TheUser->ID && gs->kcp1 != NULL) {
+        ikcp_input(gs->kcp1, buf, sz);
+        ikcp_update(gs->kcp1, iclock());
         while(1) {
           hr = ikcp_recv(gs->kcp1, buf2,UDPBUFF);
           if(hr > 0 ) {
@@ -182,18 +180,9 @@ mill_coroutine void start_kcp_client(GameThread*gs,mill_chan input) {
 
 }
 
-mill_coroutine void kcp_output1(const char *buf, int len, ikcpcb *kcp, void *user) {
+mill_coroutine int kcp_output(const char *buf, int len, ikcpcb *kcp, void *user) {
   GameThread*gs = (GameThread*)user;
-  
-  
-  mill_udpsend(gs->udpsock, gs->outaddr, buf,len);
-  
-}
 
-mill_coroutine void kcp_output2(const char *buf, int len, ikcpcb *kcp, void *user) {
-  GameThread*gs = (GameThread*)user;
-  
-  
   mill_udpsend(gs->udpsock, gs->outaddr, buf,len);
   
 }

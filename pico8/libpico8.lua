@@ -30,7 +30,9 @@ local pico8 = {
   gffdata = nil,
   mapdata = nil,
   musicdata = nil,
-  sfxdata = nil
+  sfxdata = nil,
+  version = 8
+
 }
 
 local RES = {
@@ -41,7 +43,7 @@ local RES = {
   MUSIC=4,
 }
 
-
+api.RES = RES
 api.pico8 = pico8 
 
 function api.color(c)
@@ -505,24 +507,14 @@ function api.load_p8_text(filename)
   log('finished loading cart',filename)
 
   api.loaded_code = lua
-
-  api.server.send_pico8_version(version)
-
-  api.server.send_resource(RES.GFX,  gfxdata)
-  --api.server.send_resource(RES.GFF,  gffdata:sub(1,#gffdata-1))
-	api.server.send_resource(RES.GFF,  gffdata)
-
-  api.server.send_resource(RES.SFX,  sfxdata)
-  api.server.send_resource(RES.MAP,  mapdata)
-  api.server.send_resource(RES.MUSIC,musicdata)
-
-  api.server.send_resource_done()
   
   api.pico8.gfxdata = gfxdata
   api.pico8.gffdata = gffdata
   api.pico8.sfxdata = sfxdata
   api.pico8.mapdata = mapdata
   api.pico8.musicdata = musicdata
+  
+  api.pico8.version = version
   
 end
 

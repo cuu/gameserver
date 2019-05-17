@@ -35,7 +35,7 @@ GameThread*NewGameThread() {
   memset(p->TheUser->Nick,0,NICK);
   memset(p->TheUser->Password,0,PASSWORD);
   memset(p->TheUser->Email,0,EMAIL);
-  p->TheUser->ID=0;
+  p->TheUser->ID=1; // non-zero
   
   return p;
 }
@@ -104,6 +104,7 @@ void  GameThread_SendBtn(GameThread*self,SDL_Event event) {
   char*up = "Up";
   char *p=NULL;
   int now = 0;
+  int hr;
 
   memset(buffer,0,32);
 
@@ -159,7 +160,10 @@ void  GameThread_SendBtn(GameThread*self,SDL_Event event) {
     */
     //printf("%s\n",buffer);
     //ikcp_update(self->kcp1, iclock());
-    ikcp_send(self->kcp1,buffer,strlen(buffer));
+    hr = ikcp_send(self->kcp1,buffer,strlen(buffer));
+    if(hr < 0 ) {
+      perror("ikcp_send");
+    }
     ikcp_update(self->kcp1, iclock());
   }
 }
