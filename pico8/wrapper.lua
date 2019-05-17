@@ -56,11 +56,14 @@ local _player4 = {
 }
 
 local __keymap = {
-	[0] = _player1,
-  [1] = _player2,
-  [2] = _player3,
-  [3] = _player4
+	[1] = _player1,
+  [2] = _player2,
+  [3] = _player3,
+  [4] = _player4
 }
+
+local players_counter = 0
+local players = {}
 
 local coroutine_scheduler = require("coroutine_scheduler")
 sched = coroutine_scheduler.Scheduler()
@@ -115,7 +118,7 @@ end
 
 function kcps.send(data)
   local hr 
-  for i,v in ipairs(kcps.allgui) do
+  for i,v in pairs(kcps.allgui) do
     if v ~= nil then
       v:lkcp_send(data)
       check_kcp(v)
@@ -124,12 +127,17 @@ function kcps.send(data)
 end
 
 function kcps.input(data)
-  local hr 
-  for i,v in ipairs(kcps.allgui) do
-    if v ~= nil then
+  local conv
+  local hr
+  conv = LKcp.lkcp_getconv(data)
+
+  for i,v in pairs(kcps.allgui) do
+    if i == conv and v ~= nil  then
       hr = v:lkcp_input(data)
       if hr < 0 then
+        -- data is not for this kcp
         print("lkcp_input ",i, " failed")
+        -- data is not for this kcp
       else
         check_kcp(v)
       end
@@ -141,7 +149,7 @@ end
 function kcps.receive()
   local hr,hrlen
 
-  for i,v in ipairs(kcps.allgui) do
+  for i,v in pairs(kcps.allgui) do
     while v ~= nil do
       
       hrlen, hr = v:lkcp_recv()
@@ -588,6 +596,7 @@ function api.btn(i,p)
 	if type(i) == 'number' then
 		i = i + 1
 		p = p or 0
+    p = p + 1
 		if __keymap[p] and __keymap[p][i] then
 			ret =  __keymap[p][i][1]
 			if ret >= 0 then
