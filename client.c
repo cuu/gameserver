@@ -215,7 +215,12 @@ int main(int argc,char*argv[]) {
         break;  
     }  
   }
-    
+  
+  if(gs->TheUser->ID == 0 ) {
+    printf("User ID error \n");
+    exit(-1);
+  }
+
   mill_go(start_tcp_client(gs,ch));
   mill_go(start_kcp_client(gs,ch2));
 
