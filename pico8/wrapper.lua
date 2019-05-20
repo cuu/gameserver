@@ -557,7 +557,7 @@ end
 function draw(cart)
 
   local frames = 0
-  local frame_time = 1/30.0
+  local frame_time = 1/api.pico8.fps
   local prev_time = 0
   local curr_time = 0
   local skip = 0  

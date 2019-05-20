@@ -135,7 +135,7 @@ Pico8* NewPico8() {
   memset(p->Sfx,0,64*84);
   memset(p->Music,0,64*5);
   
-  p->FPS = 60.0;
+  p->FPS = 30.0;
   p->PaletteModified = false;
   
 
