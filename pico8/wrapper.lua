@@ -95,6 +95,8 @@ local kcps = { allgui = {} }
 
 function check_kcp(kcp)
     local current = LUtil.iclock()
+    kcp:lkcp_update(current)
+    --[[
     if next == 0 then
       next = kcp:lkcp_check(current)
     end 
@@ -103,6 +105,7 @@ function check_kcp(kcp)
       kcp:lkcp_update(current)
       next = 0
     end
+    ]]
 end
 
 function kcps.new_gui(id)
@@ -111,7 +114,7 @@ function kcps.new_gui(id)
         udp_output(buf, kcps)
   end)
 
-  kcps.allgui[id]:lkcp_wndsize(128,128)
+  kcps.allgui[id]:lkcp_wndsize(256,256)
   kcps.allgui[id]:lkcp_nodelay(1, 10, 2, 1)
 
 end

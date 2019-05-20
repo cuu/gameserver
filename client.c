@@ -140,7 +140,7 @@ mill_coroutine void start_kcp_client(GameThread*gs,mill_chan input) {
 
   gs->kcp1 = ikcp_create(gs->TheUser->ID, (void*)gs);
   gs->kcp1->output = kcp_output;
-  ikcp_wndsize(gs->kcp1, 128, 128);
+  ikcp_wndsize(gs->kcp1, 256, 256);
   ikcp_nodelay(gs->kcp1, 1, 10, 2, 1);
 
   gs->kcp1->rx_minrto = 10;
@@ -160,6 +160,7 @@ mill_coroutine void start_kcp_client(GameThread*gs,mill_chan input) {
       if(conv == gs->TheUser->ID && gs->kcp1 != NULL) {
         ikcp_input(gs->kcp1, buf, sz);
         ikcp_update(gs->kcp1, iclock());
+        
         while(1) {
           hr = ikcp_recv(gs->kcp1, buf2,UDPBUFF);
           if(hr > 0 ) {
