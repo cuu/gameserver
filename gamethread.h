@@ -16,6 +16,7 @@
 #include "pico8.h"
 #include "lisp_parser.h"
 #include "surface.h"
+#include "std_stack.h"
 
 #include "ikcp.h"
 
@@ -85,6 +86,10 @@ typedef struct {
   
   ikcpcb *kcp1;
   ikcpcb *kcp2;
+
+  Stack unused_buf1; //ALuint is data
+
+
 
 }GameThread;
 
