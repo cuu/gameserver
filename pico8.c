@@ -405,7 +405,7 @@ void Pico8_ResOver(Pico8 *self, LispCmd *lisp_cmd) {
 
     self->res_offset = 0;
     self->res_state = -1;
-
+ 
     //clean up
 
 }
@@ -413,6 +413,28 @@ void Pico8_ResOver(Pico8 *self, LispCmd *lisp_cmd) {
 void Pico8_ResDone(Pico8 *self, LispCmd *lisp_cmd) {
 
     Pico8_set_shared_map(self);
+    printf("res done\n");
+
+/*
+ 	for(int i=0;i<64;i++){
+		printf("%02x%02x%02x%02x",self->sfx_data[i].mode,self->sfx_data[i].duration,self->sfx_data[i].loop_start,self->sfx_data[i].loop_end);
+		for(int j=0;j<32;j++) {
+			printf("%02x%01x%01x%01x",self->sfx_data[i].notes[j].pitch,
+														self->sfx_data[i].notes[j].waveform,
+														self->sfx_data[i].notes[j].volume,
+														self->sfx_data[i].notes[j].effect);
+		}
+		printf("\n");
+	}	
+	
+	for(int i=0;i<64;i++) {
+		printf("%02x ",self->music_data[i].loop_control);
+		for(int j=0;j<4;j++) {
+			printf("%02x",self->music_data[i].ch_ids[j]);
+		}
+		printf("\n");
+	}   
+*/
 
 }
 

@@ -801,10 +801,25 @@ function api.fget_remote(n,f)
 end 
 
 function api.music(n,fade_len,channel_mask)
+  if n == nil then
+    return
+  end
+  channel_mask = channel_mask or 15
+  fade_len = fade_len or 0
 
+  api.server.music(n,fade_len,channel_mask)
+  
 end
 
 function api.sfx(n,channel,offset)
+  if n == nil then
+    return
+  end
+
+  channel=channel or -1
+  offset=offset or 0
+
+  api.server.sfx(n,channel,offset)
 
 end
 

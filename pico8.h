@@ -25,14 +25,14 @@
 #define MUSIC_STOP_AT_END 04  //100
 
 enum SFX_Type {
-   	TRI,
+    TRI,
     UNEVEN_TRI,
     SAW,
     SQR,
     PULSE,
     ORGAN,
-	NOISE,
-	DETUNED_TRI
+    NOISE,
+    DETUNED_TRI
 };
 
 
@@ -188,6 +188,9 @@ void Pico8_Palt(Pico8 *self, LispCmd *lisp_cmd);
 
 void Pico8_Pal(Pico8 *self, LispCmd *lisp_cmd);
 
+void Pico8_Sfx(Pico8 *pico8, LispCmd *lisp_cmd);
+
+void Pico8_Music(Pico8 *pico8, LispCmd *lisp_cmd);
 
 void Pico8_set_shared_map(Pico8 *self);
 
@@ -200,5 +203,6 @@ void Pico8_set_palt(Pico8 *self, int c, int t);
 
 void Pico8_UpdateAudio(Pico8 *pico8, uint8_t *buffer);
 
-void api_music(Pico8*pico8,int n,int fade_len, int channel_mask);
+void api_music(Pico8 *pico8, int n, int fade_len, int channel_mask);
+
 #endif

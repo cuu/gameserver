@@ -254,9 +254,13 @@ function server.printh(text)
 end
 
 function server.music(n,fade_len,channel_mask)
+  local thing = safe_format("music",n,fade_len,channel_mask)
+  server.Network.cache(thing)
 
 end
-function server.sfx(n,channel,mask)
+function server.sfx(n,channel,offset)
+  local thing = safe_format("sfx",n,channel,offset)
+  server.Network.cache(thing)
 end
 
 function server.send_pico8_version(version)
