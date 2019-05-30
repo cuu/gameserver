@@ -279,7 +279,7 @@ mill_coroutine void GameThread_AudioLoop(GameThread *self) {
         alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
 
         while (processed <= 0) { // wait for play at least one sound
-            mill_msleep(mill_now() + 10);
+            mill_msleep(mill_now() + 1);
             alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
         }
 
@@ -291,18 +291,8 @@ mill_coroutine void GameThread_AudioLoop(GameThread *self) {
         for (i = 0; i < processed; i++) {
             push(&self->unused_buf1, buffers[i]);
         }
-
-        if (alGetError() != AL_NO_ERROR) {
-            printf("got open al error\n");
-            break;
-        }
-
-        alGetSourcei(source, AL_SOURCE_STATE, &val);
-        if (val != AL_PLAYING) {
-            alSourcePlay(source);
-        }
-
-        mill_msleep(mill_now() + 10);
+        
+        mill_msleep(mill_now() + 2);
     }
 
 

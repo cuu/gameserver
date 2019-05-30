@@ -33,7 +33,7 @@ typedef struct {
     int y;
 } Point;
 
-#define MAX_BUFFERS 64
+#define MAX_BUFFERS 8
 
 #define AUDIO_BUFFER 1024
 
