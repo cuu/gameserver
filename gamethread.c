@@ -400,6 +400,8 @@ char *GameThread_ProcessLispCmd(GameThread *self, char *cmd) {
             Pico8_Sfx(self->ThePico8,lisp_cmd);
         } else if (strcmp(lisp_cmd->Func,"music") == 0 ) {
             Pico8_Music(self->ThePico8,lisp_cmd);
+        } else if (strcmp(lisp_cmd->Func,"sync_music") == 0 ) {
+            Pico8_SyncMusic(self->ThePico8,lisp_cmd);
         }
 
         if (lisp_cmd->Args != NULL) {

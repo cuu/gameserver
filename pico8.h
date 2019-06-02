@@ -192,6 +192,8 @@ void Pico8_Sfx(Pico8 *pico8, LispCmd *lisp_cmd);
 
 void Pico8_Music(Pico8 *pico8, LispCmd *lisp_cmd);
 
+void Pico8_SyncMusic(Pico8 *pico8, LispCmd *lisp_cmd);
+
 void Pico8_set_shared_map(Pico8 *self);
 
 void Pico8_draw_map(Pico8 *self, int n, int x, int y);

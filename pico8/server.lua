@@ -293,6 +293,11 @@ function server.send_resource(res_type,res_data)
 
 end
 
-
+function server.sync_current_music(current_music) 
+  if current_music ~= nil then 
+    local thing = safe_format("sync_music",current_music.music,current_music.offset,current_music.channel_mask,current_music.speed)
+    server.NetworkTCP.send(thing)
+  end
+end
 
 return server

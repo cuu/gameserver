@@ -1408,3 +1408,107 @@ void Pico8_UpdateAudio(Pico8 *pico8, uint8_t *buffer) {
     }
 
 }
+
+void Pico8_SyncMusic(Pico8 *pico8, LispCmd *lisp_cmd) {
+    //music,offset,channel_mask,speed
+    int music,offset,channel_mask,speed;
+
+    int i;
+    int music_speed;
+    int music_channel;
+    pico8_music *m = NULL;
+    pico8_sfx *sfx = NULL;
+
+    music = -1;
+    offset = 0;
+    channel_mask = 15;
+    speed = 0;
+
+    if (lisp_cmd->Argc == 0) {
+        printf("SyncMusic no arguments\n");
+        return;
+    }
+
+    if(lisp_cmd->Argc > 0 ) {
+        music = CmdArg_GetInt(&lisp_cmd->Args[0]);
+    }
+
+    if(lisp_cmd->Argc > 1) {
+        offset = CmdArg_GetFloat(&lisp_cmd->Args[1]);
+    }
+    if(lisp_cmd->Argc > 2 ) {
+        channel_mask = CmdArg_GetInt(&lisp_cmd->Args[2]);
+    }
+
+    if(lisp_cmd->Argc > 3) {
+        speed = CmdArg_GetInt(&lisp_cmd->Args[3]);
+    }
+
+    if (music == -1) {
+        if (pico8->current_music != NULL) {
+            for (i = 0; i < 4; i++) {
+                if (pico8->music_data[pico8->current_music->music].ch_ids[i] < 64) { // 64=0x40,has no sounds
+                    pico8->audio_channels[i].sfx = NIL;
+                    pico8->audio_channels[i].offset = 0;
+                    pico8->audio_channels[i].last_step = NIL;
+                }
+            }
+            free(pico8->current_music);
+            pico8->current_music = NULL;
+        }
+        return;
+    }
+
+    if (music > 63) {
+        music = 63;
+    } else if (music < 0) {
+        music = 0;
+    }
+
+    m = &pico8->music_data[music];
+    music_speed = NIL;
+    music_channel = NIL;
+
+    for (i = 0; i < 4; i++) {
+        if (m->ch_ids[i] < 64) {
+            sfx = &pico8->sfx_data[m->ch_ids[i]];
+            if (sfx->loop_start >= sfx->loop_end) {
+                music_speed = sfx->duration;
+                music_channel = i;
+                break;
+            } else if (music_speed == NIL || music_speed > sfx->duration) {
+                music_speed = sfx->duration;
+                music_channel = i;
+            }
+        }
+    }
+
+    if (music_channel == NIL) {
+        return api_music(pico8, NIL, NIL, NIL);
+    }
+
+    pico8->audio_channels[music_channel].loop = FALSE;
+    if (pico8->current_music == NULL) {
+        pico8->current_music = (pico8_current_music *) malloc(sizeof(pico8_current_music));
+        pico8->current_music->speed = 0;
+    }
+
+    pico8->current_music->music = music;
+    pico8->current_music->offset = offset;
+
+    if (channel_mask == NIL) {
+        channel_mask = 15;//00001111,right now,api_sfx does not honor the channel_mask
+    }
+
+    pico8->current_music->channel_mask = channel_mask;
+    pico8->current_music->speed = music_speed;
+
+    for (i = 0; i < 4; i++) {
+        if (pico8->music_data[music].ch_ids[i] < 64) {
+            pico8->audio_channels[i].sfx = pico8->music_data[music].ch_ids[i];
+            pico8->audio_channels[i].offset = offset;
+            pico8->audio_channels[i].last_step = (int)offset;
+        }
+    }
+
+}

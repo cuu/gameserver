@@ -1,4 +1,5 @@
 package.cpath=package.cpath..";../lua-kcp/lualib/?.so"
+package.cpath=package.cpath..";../moonal/src/?.so"
 
 require 'strict'
 
@@ -85,7 +86,7 @@ local LUtil = require("lutil")
 local server = require("server")
 local api = require("libpico8")
 local lisp = require("lisp_parser")
-
+local alaudio = require("audio")
 local remote_host = "127.0.0.1"
 local remote_port = 8080
 local next= 0
@@ -587,6 +588,8 @@ function draw(cart)
         prev_time = curr_time
       end
       
+      alaudio.run(api,api.pico8)
+
       sched:suspend(udp)
     end
 
@@ -665,6 +668,7 @@ function api.send_resource_to_gui(gui_id)
   api.server.send_resource(api.RES.MUSIC,api.pico8.musicdata)
   api.server.send_resource_done()
 
+  api.server.sync_current_music(api.pico8.current_music)
   
   kcps.new_gui(gui_id)
   
@@ -731,10 +735,13 @@ end
 --------------------------------------------
 function main(file)
 
+  alaudio.load(api.pico8)
+
   sched:spawn(RunLoop,file)
-  
+
   sched:spawn(GetBtnLoopUdp)
   sched:spawn(SendResLoop)
+
 
   --sched:spawn(UDP_SendLoop)
 
@@ -750,7 +757,7 @@ function main(file)
         break
     end
   end
-
+  
 
 end
 

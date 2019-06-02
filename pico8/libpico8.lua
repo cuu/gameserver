@@ -31,7 +31,9 @@ local pico8 = {
   mapdata = nil,
   musicdata = nil,
   sfxdata = nil,
-  version = 8
+  version = 8,
+  audio_source = nil
+
 
 }
 
@@ -465,6 +467,32 @@ function api.load_p8_text(filename)
     end
 
     sfxdata = data:sub(sfx_start,sfx_end)
+
+		if sfxdata then
+			local _sfx=0
+
+			for line in sfxdata:gmatch("(.-)\n") do
+				pico8.sfx[_sfx].editor_mode=tonumber(line:sub(1, 2), 16)
+				pico8.sfx[_sfx].speed=tonumber(line:sub(3, 4), 16)
+				pico8.sfx[_sfx].loop_start=tonumber(line:sub(5, 6), 16)
+				pico8.sfx[_sfx].loop_end=tonumber(line:sub(7, 8), 16)
+				local step=0
+				for i=9, #line, 5 do
+					local v=line:sub(i, i+4)
+					assert(#v==5)
+					local note =tonumber(line:sub(i,   i+1), 16)
+					local instr=tonumber(line:sub(i+2, i+2), 16)
+					local vol  =tonumber(line:sub(i+3, i+3), 16)
+					local fx   =tonumber(line:sub(i+4, i+4), 16)
+					pico8.sfx[_sfx][step]={note, instr, vol, fx}
+					step=step+1
+					if step==32 then break end
+				end
+				_sfx=_sfx+1
+				if _sfx==64 then break end
+			end
+    end
+        
   end
 
   --assert(_sfx == 64) --- full is 64 lines
@@ -476,6 +504,22 @@ function api.load_p8_text(filename)
     music_start = music_start + 9 + #eol_chars
     local music_end = #data-#eol_chars
     musicdata = data:sub(music_start,music_end)
+
+		if musicdata then
+			local _music=0
+
+			for line in musicdata:gmatch("(.-)\n") do
+				local music=pico8.music[_music]
+				music.loop=tonumber(line:sub(1, 2), 16)
+				music[0]=tonumber(line:sub(4, 5), 16)
+				music[1]=tonumber(line:sub(6, 7), 16)
+				music[2]=tonumber(line:sub(8, 9), 16)
+				music[3]=tonumber(line:sub(10, 11), 16)
+				_music=_music+1
+				if _music==64 then break end
+			end
+		end
+
 
   end
 
@@ -807,6 +851,53 @@ function api.music(n,fade_len,channel_mask)
   channel_mask = channel_mask or 15
   fade_len = fade_len or 0
 
+	if n==-1 then
+		if api.pico8.current_music then
+			for i=0, 3 do
+				if api.pico8.music[api.pico8.current_music.music][i]<64 then
+					api.pico8.audio_channels[i].sfx=nil
+					api.pico8.audio_channels[i].offset=0
+					api.pico8.audio_channels[i].last_step=-1
+				end
+			end
+			api.pico8.current_music=nil
+		end
+		return
+	end
+	if n>63 then
+		n=63
+	elseif n<0 then
+		n=0
+	end
+	local m=api.pico8.music[n]
+	local music_speed=nil
+	local music_channel=nil
+	for i=0, 3 do
+		if m[i]<64 then
+			local sfx=api.pico8.sfx[m[i]]
+			if sfx.loop_start>=sfx.loop_end then
+				music_speed=sfx.speed
+				music_channel=i
+				break
+			elseif music_speed==nil or music_speed>sfx.speed then
+				music_speed=sfx.speed
+				music_channel=i
+			end
+		end
+	end
+	if not music_channel then
+		return api.music(-1)
+	end
+	api.pico8.audio_channels[music_channel].loop=false
+	api.pico8.current_music={music=n, offset=0, channel_mask=channel_mask or 15, speed=music_speed}
+	for i=0, 3 do
+		if api.pico8.music[n][i]<64 then
+			api.pico8.audio_channels[i].sfx=api.pico8.music[n][i]
+			api.pico8.audio_channels[i].offset=0
+			api.pico8.audio_channels[i].last_step=-1
+		end
+	end
+
   api.server.music(n,fade_len,channel_mask)
   
 end
@@ -816,9 +907,45 @@ function api.sfx(n,channel,offset)
     return
   end
 
-  channel=channel or -1
   offset=offset or 0
-
+  channel=channel or -1
+  
+	if n==-1 then
+		if channel>=0 then api.pico8.audio_channels[channel].sfx=nil end
+		return
+	elseif n==-2 then
+		if channel>=0 then api.pico8.audio_channels[channel].loop=false end
+		return
+	end
+	offset=offset or 0
+	if n>63 then
+		n=63
+	elseif n<0 then
+		n=0
+	end
+	if offset>31 then
+		offset=31
+	elseif offset<0 then
+		offset=0
+	end
+	if channel==-1 then
+		-- find a free channel
+		for i=0, 3 do
+			if api.pico8.audio_channels[i].sfx==nil then
+				channel=i
+				break
+			elseif api.pico8.audio_channels[i].sfx==n then
+				channel=i
+			end
+		end
+	end
+	if channel==-1 then return end
+	local ch=api.pico8.audio_channels[channel]
+	ch.sfx=n
+	ch.offset=offset
+	ch.last_step=offset-1
+  ch.loop=true
+  
   api.server.sfx(n,channel,offset)
 
 end

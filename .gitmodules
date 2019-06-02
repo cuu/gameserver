@@ -7,3 +7,6 @@
 [submodule "lua-kcp"]
 	path = lua-kcp
 	url = https://github.com/cuu/lua-kcp.git
+[submodule "moonal"]
+	path = moonal
+	url = https://github.com/stetre/moonal.git
