@@ -1,5 +1,6 @@
 local audio = {}
 local al = require('moonal')
+local bit = require('bit')
 local osc = {}
 
 local __buffer_count = 8
